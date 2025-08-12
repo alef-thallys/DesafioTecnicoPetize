@@ -1,30 +1,43 @@
 package com.github.alefthallys.desafiotecnicopetize.controllers;
 
+import com.github.alefthallys.desafiotecnicopetize.assemblers.TaskResponseAssembler;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskResponseDTO;
 import com.github.alefthallys.desafiotecnicopetize.services.TaskService;
 import jakarta.validation.Valid;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
 public class TaskController {
 	
 	private final TaskService taskService;
+	private final TaskResponseAssembler taskResponseAssembler;
 	
-	public TaskController(TaskService taskService) {
+	public TaskController(TaskService taskService, TaskResponseAssembler taskResponseAssembler) {
 		this.taskService = taskService;
+		this.taskResponseAssembler = taskResponseAssembler;
 	}
 	
 	@GetMapping
-	public ResponseEntity<List<TaskResponseDTO>> findAll() {
-		return new ResponseEntity<>(taskService.findAll(), HttpStatus.OK);
-	}
+	public ResponseEntity<CollectionModel<EntityModel<TaskResponseDTO>>> findAll() {
+        List<TaskResponseDTO> tasks = taskService.findAll();
+        List<EntityModel<TaskResponseDTO>> taskResources = tasks.stream()
+                .map(taskResponseAssembler::toModel)
+                .collect(Collectors.toList());
+        CollectionModel<EntityModel<TaskResponseDTO>> collectionModel = CollectionModel.of(taskResources);
+        collectionModel.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(TaskController.class).create(null)).withRel("create"));
+        return ResponseEntity.ok(collectionModel);
+    }
 	
 	@GetMapping("/{id}")
 	public ResponseEntity<TaskResponseDTO> findById(@PathVariable UUID id) {
