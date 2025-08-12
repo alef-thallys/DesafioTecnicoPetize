@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
 import java.util.List;
@@ -29,9 +30,10 @@ public class User implements UserDetails {
 	@Column(name = "password", nullable = false)
 	private String password;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = "role", nullable = false)
 	private Role role;
-	
+
 	public User(String username, String encryptedPassword, Role role) {
 		this.username = username;
 		this.password = encryptedPassword;
@@ -50,7 +52,7 @@ public class User implements UserDetails {
 	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return null;
+		return List.of(new SimpleGrantedAuthority("ROLE_USER"));
 	}
 
 	@Override
