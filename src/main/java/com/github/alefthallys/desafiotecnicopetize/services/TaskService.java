@@ -9,7 +9,6 @@ import com.github.alefthallys.desafiotecnicopetize.utils.TaskMapperUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -37,13 +36,9 @@ public class TaskService {
 	}
 	
 	public TaskResponseDTO update(UUID id, TaskRequestDTO taskRequestDTO) {
-		Optional<Task> optionalTask = taskRepository.findById(id);
+		Task existingTask = taskRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
 		
-		if (optionalTask.isEmpty()) {
-			throw new ResourceNotFoundException("Task not found with id: " + id);
-		}
-		
-		Task existingTask = optionalTask.get();
 		existingTask.setTitle(taskRequestDTO.title());
 		existingTask.setDescription(taskRequestDTO.description());
 		existingTask.setDueDate(taskRequestDTO.dueDate());

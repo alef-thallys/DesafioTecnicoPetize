@@ -1,10 +1,12 @@
 package com.github.alefthallys.desafiotecnicopetize.services;
 
+import com.github.alefthallys.desafiotecnicopetize.dtos.SubTaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskResponseDTO;
 import com.github.alefthallys.desafiotecnicopetize.enums.Priority;
 import com.github.alefthallys.desafiotecnicopetize.enums.Status;
 import com.github.alefthallys.desafiotecnicopetize.exceptions.ResourceNotFoundException;
+import com.github.alefthallys.desafiotecnicopetize.models.SubTask;
 import com.github.alefthallys.desafiotecnicopetize.models.Task;
 import com.github.alefthallys.desafiotecnicopetize.repositories.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,8 +47,23 @@ class TaskServiceTest {
     void setUp() {
         taskId = UUID.randomUUID();
         nonExistingTaskId = UUID.randomUUID();
-	    task = new Task(taskId, "title", "description", LocalDate.parse("2025-10-01"), Status.TODO, Priority.HIGH, null, null, null);
-        taskRequestDTO = new TaskRequestDTO("title", "description", LocalDate.parse("2025-10-01"), Status.TODO, Priority.HIGH);
+	    
+	    SubTask subTask = new SubTask();
+	    subTask.setId(UUID.randomUUID());
+	    subTask.setTitle("SubTask Title");
+	    subTask.setStatus(Status.TODO);
+	    
+	    task = new Task();
+	    task.setId(taskId);
+	    task.setTitle("title");
+	    task.setDescription("description");
+	    task.setDueDate(LocalDate.parse("2025-10-01"));
+	    task.setStatus(Status.TODO);
+	    task.setPriority(Priority.HIGH);
+	    task.setSubTasks(Collections.singletonList(subTask));
+	    
+	    SubTaskRequestDTO subTaskRequestDTO = new SubTaskRequestDTO("SubTask Title", Status.TODO);
+	    taskRequestDTO = new TaskRequestDTO("title", "description", LocalDate.parse("2025-10-01"), Status.TODO, Priority.HIGH, Collections.singletonList(subTaskRequestDTO));
     }
 
     @Nested
@@ -62,6 +79,7 @@ class TaskServiceTest {
             assertNotNull(result);
             assertEquals(1, result.size());
             assertEquals(task.getId(), result.get(0).id());
+	        assertFalse(result.get(0).subTasks().isEmpty());
             verify(taskRepository).findAll();
         }
 
@@ -90,6 +108,7 @@ class TaskServiceTest {
 
             assertNotNull(result);
             assertEquals(task.getId(), result.id());
+	        assertFalse(result.subTasks().isEmpty());
             verify(taskRepository).findById(taskId);
         }
 
@@ -115,6 +134,7 @@ class TaskServiceTest {
 
             assertNotNull(result);
             assertEquals(task.getId(), result.id());
+	        assertFalse(result.subTasks().isEmpty());
             verify(taskRepository).save(any(Task.class));
         }
     }
@@ -125,8 +145,17 @@ class TaskServiceTest {
         @Test
         @DisplayName("Should update and return updated TaskResponseDTO")
         void testUpdateShouldReturnUpdatedTask() {
-            TaskRequestDTO updatedRequest = new TaskRequestDTO("updated title", "updated desc", LocalDate.parse("2025-10-02"), Status.DONE, Priority.LOW);
-	        Task updatedTask = new Task(taskId, "updated title", "updated desc", LocalDate.parse("2025-10-02"), Status.DONE, Priority.LOW, null, null, null);
+	        SubTaskRequestDTO updatedSubTaskRequest = new SubTaskRequestDTO("Updated SubTask", Status.DONE);
+	        TaskRequestDTO updatedRequest = new TaskRequestDTO("updated title", "updated desc", LocalDate.parse("2025-10-02"), Status.DONE, Priority.LOW, Collections.singletonList(updatedSubTaskRequest));
+	        
+	        SubTask updatedSubTask = new SubTask();
+	        updatedSubTask.setTitle("Updated SubTask");
+	        
+	        Task updatedTask = new Task();
+	        updatedTask.setId(taskId);
+	        updatedTask.setTitle("updated title");
+	        updatedTask.setStatus(Status.DONE);
+	        updatedTask.setSubTasks(Collections.singletonList(updatedSubTask));
 
             when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
             when(taskRepository.save(any(Task.class))).thenReturn(updatedTask);
@@ -136,6 +165,8 @@ class TaskServiceTest {
             assertNotNull(result);
             assertEquals("updated title", result.title());
             assertEquals(Status.DONE, result.status());
+	        assertFalse(result.subTasks().isEmpty());
+	        assertEquals("Updated SubTask", result.subTasks().get(0).title());
             verify(taskRepository).findById(taskId);
             verify(taskRepository).save(any(Task.class));
         }
@@ -157,24 +188,24 @@ class TaskServiceTest {
         @Test
         @DisplayName("Should delete task successfully")
         void testDeleteShouldCompleteSuccessfully() {
-            when(taskRepository.existsById(taskId)).thenReturn(true);
-            doNothing().when(taskRepository).deleteById(taskId);
+	        when(taskRepository.existsById(taskId)).thenReturn(true);
+	        doNothing().when(taskRepository).deleteById(taskId);
 
             assertDoesNotThrow(() -> taskService.delete(taskId));
-
-            verify(taskRepository).existsById(taskId);
-            verify(taskRepository).deleteById(taskId);
+	        
+	        verify(taskRepository).existsById(taskId);
+	        verify(taskRepository).deleteById(taskId);
         }
 
         @Test
         @DisplayName("Should throw ResourceNotFoundException when ID does not exist for deletion")
         void testDeleteShouldThrowException() {
-            when(taskRepository.existsById(nonExistingTaskId)).thenReturn(false);
+	        when(taskRepository.existsById(nonExistingTaskId)).thenReturn(false);
 
             assertThrows(ResourceNotFoundException.class, () -> taskService.delete(nonExistingTaskId));
-
-            verify(taskRepository).existsById(nonExistingTaskId);
-            verify(taskRepository, never()).deleteById(any(UUID.class));
+	        
+	        verify(taskRepository).existsById(nonExistingTaskId);
+	        verify(taskRepository, never()).deleteById(any(UUID.class));
         }
     }
 }

@@ -4,6 +4,7 @@ import com.github.alefthallys.desafiotecnicopetize.enums.Priority;
 import com.github.alefthallys.desafiotecnicopetize.enums.Status;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public record TaskResponseDTO(
@@ -12,6 +13,7 @@ public record TaskResponseDTO(
 		String description,
 		LocalDate dueDate,
 		Status status,
-		Priority priority
+		Priority priority,
+		List<SubTaskResponseDTO> subTasks
 ) {
 }
