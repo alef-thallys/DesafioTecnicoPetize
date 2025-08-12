@@ -9,7 +9,6 @@ import com.github.alefthallys.desafiotecnicopetize.models.User;
 import com.github.alefthallys.desafiotecnicopetize.repositories.TaskRepository;
 import com.github.alefthallys.desafiotecnicopetize.repositories.UserRepository;
 import com.github.alefthallys.desafiotecnicopetize.utils.TaskMapperUtils;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
