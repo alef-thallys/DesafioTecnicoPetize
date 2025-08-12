@@ -28,7 +28,7 @@ public class SubTask {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
 	private Status status;
-
+	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "task_id", nullable = false)
 	@JsonBackReference

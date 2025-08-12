@@ -114,5 +114,6 @@ public class GlobalExceptionHandler {
 			int status,
 			String error,
 			String message
-	) {}
+	) {
+	}
 }

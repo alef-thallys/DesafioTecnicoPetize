@@ -5,9 +5,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class DesafioTecnicoPetizeApplication {
-
-    public static void main(String[] args) {
-        SpringApplication.run(DesafioTecnicoPetizeApplication.class, args);
-    }
-
+	
+	public static void main(String[] args) {
+		SpringApplication.run(DesafioTecnicoPetizeApplication.class, args);
+	}
+	
 }

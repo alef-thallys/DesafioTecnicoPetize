@@ -44,17 +44,19 @@ public class TaskService {
 		existingTask.setDueDate(taskRequestDTO.dueDate());
 		existingTask.setStatus(taskRequestDTO.status());
 		existingTask.setPriority(taskRequestDTO.priority());
-
-		existingTask.setSubTasks(new java.util.ArrayList<>(existingTask.getSubTasks()));
-		existingTask.getSubTasks().clear();
+		
+		// Ensure mutable list for subtasks to avoid UnsupportedOperationException
+		existingTask.setSubTasks(new java.util.ArrayList<>());
 		if (taskRequestDTO.subTasks() != null) {
-			for (var subTaskDTO : taskRequestDTO.subTasks()) {
-				var subTask = new com.github.alefthallys.desafiotecnicopetize.models.SubTask();
-				subTask.setTitle(subTaskDTO.title());
-				subTask.setStatus(subTaskDTO.status());
-				subTask.setTask(existingTask);
-				existingTask.getSubTasks().add(subTask);
-			}
+			taskRequestDTO.subTasks().stream()
+					.map(subTaskDTO -> {
+						var subTask = new com.github.alefthallys.desafiotecnicopetize.models.SubTask();
+						subTask.setTitle(subTaskDTO.title());
+						subTask.setStatus(subTaskDTO.status());
+						subTask.setTask(existingTask);
+						return subTask;
+					})
+					.forEach(existingTask.getSubTasks()::add);
 		}
 		
 		return TaskMapperUtils.toResponseDTO(taskRepository.save(existingTask));

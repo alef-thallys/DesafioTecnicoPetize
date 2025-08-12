@@ -30,8 +30,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TaskController.class)
 @Import(TaskResponseAssembler.class)
@@ -78,35 +77,42 @@ public class TaskControllerTest {
 		return new TaskResponseDTO(id, title, desc, date, status, priority, now, now, subTasks);
 	}
 	
+	// Helper for JSON content type
+	private String toJson(Object obj) throws Exception {
+		return objectMapper.writeValueAsString(obj);
+	}
+	
 	@Nested
-	@DisplayName("Tests for findAllTasks")
+	@DisplayName("Tests for findAll")
 	class FindAllTasksTests {
 		@Test
 		@DisplayName("Should return list of TaskResponseDTO when tasks exist")
 		public void testFindAllTasksShouldReturnListOfTaskResponseDTO() throws Exception {
 			when(taskService.findAll()).thenReturn(List.of(taskResponseDTO, taskResponseDTO));
-
+			
 			mockMvc.perform(get("/api/v1/tasks"))
 					.andExpect(status().isOk())
 					.andExpect(jsonPath("$._embedded.taskResponseDTOList").isArray())
 					.andExpect(jsonPath("$._embedded.taskResponseDTOList").isNotEmpty())
 					.andExpect(jsonPath("$._embedded.taskResponseDTOList[0].id").value(existingTaskId.toString()))
-					.andExpect(jsonPath("$._embedded.taskResponseDTOList[0].subTasks[0].title").value("SubTask Title"));
+					.andExpect(jsonPath("$._embedded.taskResponseDTOList[0].subTasks[0].title").value("SubTask Title"))
+					.andExpect(content().contentType("application/json"));
 		}
-
+		
 		@Test
 		@DisplayName("Should return empty list when no tasks exist")
 		public void testFindAllTasksShouldReturnEmptyList() throws Exception {
 			when(taskService.findAll()).thenReturn(List.of());
-
+			
 			mockMvc.perform(get("/api/v1/tasks"))
 					.andExpect(status().isOk())
-					.andExpect(jsonPath("$._embedded").doesNotExist());
+					.andExpect(jsonPath("$._embedded").doesNotExist())
+					.andExpect(content().contentType("application/json"));
 		}
 	}
 	
 	@Nested
-	@DisplayName("Tests for findTaskById")
+	@DisplayName("Tests for findById")
 	class FindTaskByIdTests {
 		@Test
 		@DisplayName("Should return TaskResponseDTO when ID exists")
@@ -116,7 +122,8 @@ public class TaskControllerTest {
 			mockMvc.perform(get("/api/v1/tasks/{id}", existingTaskId))
 					.andExpect(status().isOk())
 					.andExpect(jsonPath("$.id").value(existingTaskId.toString()))
-					.andExpect(jsonPath("$.subTasks[0].title").value("SubTask Title"));
+					.andExpect(jsonPath("$.subTasks[0].title").value("SubTask Title"))
+					.andExpect(content().contentType("application/json"));
 		}
 		
 		@Test
@@ -130,7 +137,7 @@ public class TaskControllerTest {
 	}
 	
 	@Nested
-	@DisplayName("Tests for createTask")
+	@DisplayName("Tests for create")
 	class CreateTaskTests {
 		@Test
 		@DisplayName("Should return Created and TaskDTO on successful creation")
@@ -139,10 +146,11 @@ public class TaskControllerTest {
 			
 			mockMvc.perform(post("/api/v1/tasks")
 							.contentType(MediaType.APPLICATION_JSON)
-							.content(objectMapper.writeValueAsString(taskRequestDTO)))
+							.content(toJson(taskRequestDTO)))
 					.andExpect(status().isCreated())
 					.andExpect(jsonPath("$.id").value(existingTaskId.toString()))
-					.andExpect(jsonPath("$.subTasks[0].title").value("SubTask Title"));
+					.andExpect(jsonPath("$.subTasks[0].title").value("SubTask Title"))
+					.andExpect(content().contentType("application/json"));
 		}
 		
 		@Test
@@ -152,13 +160,13 @@ public class TaskControllerTest {
 			
 			mockMvc.perform(post("/api/v1/tasks")
 							.contentType(MediaType.APPLICATION_JSON)
-							.content(objectMapper.writeValueAsString(invalidRequest)))
+							.content(toJson(invalidRequest)))
 					.andExpect(status().isBadRequest());
 		}
 	}
 	
 	@Nested
-	@DisplayName("Tests for updateTask")
+	@DisplayName("Tests for update")
 	class UpdateTaskTests {
 		@Test
 		@DisplayName("Should return OK and updated TaskDTO on successful update")
@@ -170,10 +178,11 @@ public class TaskControllerTest {
 			
 			mockMvc.perform(put("/api/v1/tasks/{id}", existingTaskId)
 							.contentType(MediaType.APPLICATION_JSON)
-							.content(objectMapper.writeValueAsString(taskRequestDTO)))
+							.content(toJson(taskRequestDTO)))
 					.andExpect(status().isOk())
 					.andExpect(jsonPath("$.description").value("description-updated"))
-					.andExpect(jsonPath("$.subTasks[0].title").value("Updated SubTask"));
+					.andExpect(jsonPath("$.subTasks[0].title").value("Updated SubTask"))
+					.andExpect(content().contentType("application/json"));
 		}
 		
 		@Test
@@ -183,13 +192,13 @@ public class TaskControllerTest {
 			
 			mockMvc.perform(put("/api/v1/tasks/{id}", nonExistingTaskId)
 							.contentType(MediaType.APPLICATION_JSON)
-							.content(objectMapper.writeValueAsString(taskRequestDTO)))
+							.content(toJson(taskRequestDTO)))
 					.andExpect(status().isNotFound());
 		}
 	}
 	
 	@Nested
-	@DisplayName("Tests for deleteTask")
+	@DisplayName("Tests for delete")
 	class DeleteTaskTests {
 		@Test
 		@DisplayName("Should return No Content on successful deletion")
