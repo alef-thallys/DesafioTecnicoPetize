@@ -49,10 +49,13 @@ public class TaskService {
 	}
 	
 	public void delete(UUID id) {
-		if (!taskRepository.existsById(id)) {
-			throw new ResourceNotFoundException("Task not found with id: " + id);
+		Task task = taskRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
+		boolean hasTodoSubTask = task.getSubTasks() != null && task.getSubTasks().stream()
+				.anyMatch(subTask -> subTask.getStatus() == com.github.alefthallys.desafiotecnicopetize.enums.Status.TODO);
+		if (hasTodoSubTask) {
+			throw new IllegalStateException("Cannot delete a Task with SubTasks in TODO status");
 		}
-		
 		taskRepository.deleteById(id);
 	}
 }

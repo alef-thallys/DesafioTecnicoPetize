@@ -188,24 +188,44 @@ class TaskServiceTest {
         @Test
         @DisplayName("Should delete task successfully")
         void testDeleteShouldCompleteSuccessfully() {
-	        when(taskRepository.existsById(taskId)).thenReturn(true);
-	        doNothing().when(taskRepository).deleteById(taskId);
+            SubTask doneSubTask = new SubTask();
+            doneSubTask.setId(UUID.randomUUID());
+            doneSubTask.setTitle("SubTask DONE");
+            doneSubTask.setStatus(Status.DONE);
+            task.setSubTasks(List.of(doneSubTask));
+
+            when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+            doNothing().when(taskRepository).deleteById(taskId);
 
             assertDoesNotThrow(() -> taskService.delete(taskId));
-	        
-	        verify(taskRepository).existsById(taskId);
-	        verify(taskRepository).deleteById(taskId);
+
+            verify(taskRepository).findById(taskId);
+            verify(taskRepository).deleteById(taskId);
         }
 
         @Test
         @DisplayName("Should throw ResourceNotFoundException when ID does not exist for deletion")
         void testDeleteShouldThrowException() {
-	        when(taskRepository.existsById(nonExistingTaskId)).thenReturn(false);
+            when(taskRepository.findById(nonExistingTaskId)).thenReturn(Optional.empty());
 
             assertThrows(ResourceNotFoundException.class, () -> taskService.delete(nonExistingTaskId));
-	        
-	        verify(taskRepository).existsById(nonExistingTaskId);
-	        verify(taskRepository, never()).deleteById(any(UUID.class));
+            verify(taskRepository).findById(nonExistingTaskId);
+            verify(taskRepository, never()).deleteById(any(UUID.class));
+        }
+
+        @Test
+        @DisplayName("Should throw IllegalStateException when trying to delete Task with SubTasks in TODO status")
+        void testDeleteShouldThrowExceptionIfHasTodoSubTask() {
+            SubTask todoSubTask = new SubTask();
+            todoSubTask.setId(UUID.randomUUID());
+            todoSubTask.setTitle("SubTask TODO");
+            todoSubTask.setStatus(Status.TODO);
+            task.setSubTasks(List.of(todoSubTask));
+
+            when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
+
+            assertThrows(IllegalStateException.class, () -> taskService.delete(taskId));
+            verify(taskRepository, never()).deleteById(any(UUID.class));
         }
     }
 }
