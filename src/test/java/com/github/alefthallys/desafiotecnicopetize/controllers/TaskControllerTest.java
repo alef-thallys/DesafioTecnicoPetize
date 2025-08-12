@@ -71,7 +71,8 @@ public class TaskControllerTest {
 	}
 	
 	private TaskResponseDTO createResponse(UUID id, String title, String desc, LocalDate date, Status status, Priority priority, List<SubTaskResponseDTO> subTasks) {
-		return new TaskResponseDTO(id, title, desc, date, status, priority, subTasks);
+		LocalDateTime now = LocalDateTime.now();
+		return new TaskResponseDTO(id, title, desc, date, status, priority, now, now, subTasks);
 	}
 	
 	@Nested

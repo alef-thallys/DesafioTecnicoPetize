@@ -39,6 +39,8 @@ public class TaskMapperUtils {
 				task.getDueDate(),
 				task.getStatus(),
 				task.getPriority(),
+				task.getCreatedAt(),
+				task.getUpdatedAt(),
 				task.getSubTasks().stream().map(TaskMapperUtils::toResponseDTO).collect(Collectors.toList())
 		);
 	}
