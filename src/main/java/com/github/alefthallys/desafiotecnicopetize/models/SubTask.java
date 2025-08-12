@@ -1,5 +1,6 @@
 package com.github.alefthallys.desafiotecnicopetize.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.github.alefthallys.desafiotecnicopetize.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
@@ -30,6 +31,7 @@ public class SubTask {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "task_id", nullable = false)
+	@JsonBackReference
 	private Task task;
 	
 	@Column(name = "created_at", nullable = false, updatable = false)

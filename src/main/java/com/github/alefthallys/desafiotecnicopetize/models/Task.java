@@ -1,5 +1,6 @@
 package com.github.alefthallys.desafiotecnicopetize.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.github.alefthallys.desafiotecnicopetize.enums.Priority;
 import com.github.alefthallys.desafiotecnicopetize.enums.Status;
 import jakarta.persistence.*;
@@ -7,6 +8,8 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -41,7 +44,8 @@ public class Task {
 	private Priority priority;
 	
 	@OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-	private java.util.List<SubTask> subTasks = new java.util.ArrayList<>();
+	@JsonManagedReference
+	private List<SubTask> subTasks = new ArrayList<>();
 	
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;
