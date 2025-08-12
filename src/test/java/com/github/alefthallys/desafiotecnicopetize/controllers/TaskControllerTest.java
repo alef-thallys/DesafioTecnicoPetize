@@ -10,12 +10,16 @@ import com.github.alefthallys.desafiotecnicopetize.dtos.TaskResponseDTO;
 import com.github.alefthallys.desafiotecnicopetize.enums.Priority;
 import com.github.alefthallys.desafiotecnicopetize.enums.Status;
 import com.github.alefthallys.desafiotecnicopetize.exceptions.ResourceNotFoundException;
+import com.github.alefthallys.desafiotecnicopetize.repositories.UserRepository;
+import com.github.alefthallys.desafiotecnicopetize.security.TokenService;
+import com.github.alefthallys.desafiotecnicopetize.services.AuthorizationService;
 import com.github.alefthallys.desafiotecnicopetize.services.TaskService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,19 +33,30 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(TaskController.class)
 @Import(TaskResponseAssembler.class)
 @DisplayName("TaskController Tests")
+@WithMockUser
 public class TaskControllerTest {
-	
+
 	@Autowired
 	private MockMvc mockMvc;
 	
 	@MockitoBean
 	private TaskService taskService;
+
+	@MockitoBean
+	private TokenService tokenService;
+
+	@MockitoBean
+	private UserRepository userRepository;
+
+	@MockitoBean
+	private AuthorizationService authorizationService;
 	
 	@Autowired
 	private ObjectMapper objectMapper;
@@ -145,6 +160,7 @@ public class TaskControllerTest {
 			when(taskService.create(any(TaskRequestDTO.class))).thenReturn(taskResponseDTO);
 			
 			mockMvc.perform(post("/api/v1/tasks")
+							.with(csrf())
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(toJson(taskRequestDTO)))
 					.andExpect(status().isCreated())
@@ -159,6 +175,7 @@ public class TaskControllerTest {
 			TaskRequestDTO invalidRequest = createRequest("", "", null, null, null, null);
 			
 			mockMvc.perform(post("/api/v1/tasks")
+							.with(csrf())
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(toJson(invalidRequest)))
 					.andExpect(status().isBadRequest());
@@ -177,6 +194,7 @@ public class TaskControllerTest {
 			when(taskService.update(eq(existingTaskId), any(TaskRequestDTO.class))).thenReturn(updatedResponseDTO);
 			
 			mockMvc.perform(put("/api/v1/tasks/{id}", existingTaskId)
+							.with(csrf())
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(toJson(taskRequestDTO)))
 					.andExpect(status().isOk())
@@ -191,6 +209,7 @@ public class TaskControllerTest {
 			when(taskService.update(eq(nonExistingTaskId), any(TaskRequestDTO.class))).thenThrow(new ResourceNotFoundException("Task not found"));
 			
 			mockMvc.perform(put("/api/v1/tasks/{id}", nonExistingTaskId)
+							.with(csrf())
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(toJson(taskRequestDTO)))
 					.andExpect(status().isNotFound());
@@ -203,7 +222,7 @@ public class TaskControllerTest {
 		@Test
 		@DisplayName("Should return No Content on successful deletion")
 		public void testDeleteTaskShouldReturnNoContent() throws Exception {
-			mockMvc.perform(delete("/api/v1/tasks/{id}", existingTaskId))
+			mockMvc.perform(delete("/api/v1/tasks/{id}", existingTaskId).with(csrf()))
 					.andExpect(status().isNoContent());
 		}
 		
@@ -212,7 +231,7 @@ public class TaskControllerTest {
 		public void testDeleteTaskShouldReturnNotFound() throws Exception {
 			doThrow(new ResourceNotFoundException("Task not found")).when(taskService).delete(nonExistingTaskId);
 			
-			mockMvc.perform(delete("/api/v1/tasks/{id}", nonExistingTaskId))
+			mockMvc.perform(delete("/api/v1/tasks/{id}", nonExistingTaskId).with(csrf()))
 					.andExpect(status().isNotFound());
 		}
 	}
