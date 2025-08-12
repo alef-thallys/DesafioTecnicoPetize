@@ -4,9 +4,10 @@ import com.github.alefthallys.desafiotecnicopetize.enums.Priority;
 import com.github.alefthallys.desafiotecnicopetize.enums.Status;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 public record TaskResponseDTO(
-		Long id,
+		UUID id,
 		String title,
 		String description,
 		LocalDate dueDate,

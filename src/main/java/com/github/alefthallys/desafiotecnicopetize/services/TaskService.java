@@ -2,61 +2,62 @@ package com.github.alefthallys.desafiotecnicopetize.services;
 
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskResponseDTO;
-import com.github.alefthallys.desafiotecnicopetize.enums.Priority;
-import com.github.alefthallys.desafiotecnicopetize.enums.Status;
+import com.github.alefthallys.desafiotecnicopetize.exceptions.ResourceNotFoundException;
+import com.github.alefthallys.desafiotecnicopetize.models.Task;
+import com.github.alefthallys.desafiotecnicopetize.repositories.TaskRepository;
+import com.github.alefthallys.desafiotecnicopetize.utils.TaskMapperUtils;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class TaskService {
 	
-	public List<TaskResponseDTO> findAll() {
-		return List.of(new TaskResponseDTO(
-				1L,
-				"Sample Task",
-				"Sample Description",
-				LocalDate.now(),
-				Status.TODO,
-				Priority.MEDIUM)
-		);
+	private final TaskRepository taskRepository;
+	
+	public TaskService(TaskRepository taskRepository) {
+		this.taskRepository = taskRepository;
 	}
 	
-	public TaskResponseDTO findById(Long id) {
-		return new TaskResponseDTO(
-				1L,
-				"Sample Task",
-				"Sample Description",
-				LocalDate.now(),
-				Status.DONE,
-				Priority.HIGH
-		);
+	public List<TaskResponseDTO> findAll() {
+		return taskRepository.findAll().stream().map(TaskMapperUtils::toResponseDTO).toList();
+	}
+	
+	public TaskResponseDTO findById(UUID id) {
+		return taskRepository.findById(id)
+				.map(TaskMapperUtils::toResponseDTO)
+				.orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
 	}
 	
 	public TaskResponseDTO create(TaskRequestDTO taskRequestDTO) {
-		return new TaskResponseDTO(
-				1L,
-				taskRequestDTO.title(),
-				taskRequestDTO.description(),
-				taskRequestDTO.dueDate(),
-				taskRequestDTO.status(),
-				taskRequestDTO.priority()
-		);
+		Task task = TaskMapperUtils.toEntity(taskRequestDTO);
+		return TaskMapperUtils.toResponseDTO(taskRepository.save(task));
 	}
 	
-	public TaskResponseDTO update(Long id, TaskRequestDTO taskRequestDTO) {
-		return new TaskResponseDTO(
-				1L,
-				taskRequestDTO.title(),
-				taskRequestDTO.description(),
-				taskRequestDTO.dueDate(),
-				taskRequestDTO.status(),
-				taskRequestDTO.priority()
-		);
+	public TaskResponseDTO update(UUID id, TaskRequestDTO taskRequestDTO) {
+		Optional<Task> optionalTask = taskRepository.findById(id);
+		
+		if (optionalTask.isEmpty()) {
+			throw new ResourceNotFoundException("Task not found with id: " + id);
+		}
+		
+		Task existingTask = optionalTask.get();
+		existingTask.setTitle(taskRequestDTO.title());
+		existingTask.setDescription(taskRequestDTO.description());
+		existingTask.setDueDate(taskRequestDTO.dueDate());
+		existingTask.setStatus(taskRequestDTO.status());
+		existingTask.setPriority(taskRequestDTO.priority());
+		
+		return TaskMapperUtils.toResponseDTO(taskRepository.save(existingTask));
 	}
 	
-	public Void delete(Long id) {
-		return null;
+	public void delete(UUID id) {
+		if (!taskRepository.existsById(id)) {
+			throw new ResourceNotFoundException("Task not found with id: " + id);
+		}
+		
+		taskRepository.deleteById(id);
 	}
 }

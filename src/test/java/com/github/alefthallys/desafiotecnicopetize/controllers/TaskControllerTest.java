@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -45,6 +46,8 @@ public class TaskControllerTest {
 	
 	private TaskRequestDTO taskRequestDTO;
 	private TaskResponseDTO taskResponseDTO;
+	private UUID existingTaskId;
+	private UUID nonExistingTaskId;
 	
 	@BeforeAll
 	static void configObjectMapper(@Autowired ObjectMapper mapper) {
@@ -53,15 +56,17 @@ public class TaskControllerTest {
 	
 	@BeforeEach
 	public void setup() {
+		existingTaskId = UUID.randomUUID();
+		nonExistingTaskId = UUID.randomUUID();
 		taskRequestDTO = createRequest("title", "description", LocalDate.parse("2025-10-01"), Status.TODO, Priority.HIGH);
-		taskResponseDTO = createResponse(1L, "title", "description", LocalDate.parse("2025-10-01"), Status.DONE, Priority.HIGH);
+		taskResponseDTO = createResponse(existingTaskId, "title", "description", LocalDate.parse("2025-10-01"), Status.DONE, Priority.HIGH);
 	}
 	
 	private TaskRequestDTO createRequest(String title, String desc, LocalDate date, Status status, Priority priority) {
 		return new TaskRequestDTO(title, desc, date, status, priority);
 	}
 	
-	private TaskResponseDTO createResponse(Long id, String title, String desc, LocalDate date, Status status, Priority priority) {
+	private TaskResponseDTO createResponse(UUID id, String title, String desc, LocalDate date, Status status, Priority priority) {
 		return new TaskResponseDTO(id, title, desc, date, status, priority);
 	}
 	
@@ -77,7 +82,7 @@ public class TaskControllerTest {
 					.andExpect(status().isOk())
 					.andExpect(jsonPath("$").isArray())
 					.andExpect(jsonPath("$").isNotEmpty())
-					.andExpect(jsonPath("$[0].id").value(1L));
+					.andExpect(jsonPath("$[0].id").value(existingTaskId.toString()));
 		}
 		
 		@Test
@@ -98,19 +103,19 @@ public class TaskControllerTest {
 		@Test
 		@DisplayName("Should return TaskResponseDTO when ID exists")
 		public void testFindTaskByIdShouldReturnTaskResponseDTO() throws Exception {
-			when(taskService.findById(1L)).thenReturn(taskResponseDTO);
+			when(taskService.findById(existingTaskId)).thenReturn(taskResponseDTO);
 			
-			mockMvc.perform(get("/api/v1/tasks/1"))
+			mockMvc.perform(get("/api/v1/tasks/" + existingTaskId))
 					.andExpect(status().isOk())
-					.andExpect(jsonPath("$.id").value(1L));
+					.andExpect(jsonPath("$.id").value(existingTaskId.toString()));
 		}
 		
 		@Test
 		@DisplayName("Should return Not Found when ID does not exist")
 		public void testFindTaskByIdShouldReturnNotFound() throws Exception {
-			when(taskService.findById(99L)).thenThrow(new ResourceNotFoundException("Task not found"));
+			when(taskService.findById(nonExistingTaskId)).thenThrow(new ResourceNotFoundException("Task not found"));
 			
-			mockMvc.perform(get("/api/v1/tasks/99"))
+			mockMvc.perform(get("/api/v1/tasks/" + nonExistingTaskId))
 					.andExpect(status().isNotFound());
 		}
 	}
@@ -127,7 +132,7 @@ public class TaskControllerTest {
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(objectMapper.writeValueAsString(taskRequestDTO)))
 					.andExpect(status().isCreated())
-					.andExpect(jsonPath("$.id").value(1L));
+					.andExpect(jsonPath("$.id").value(existingTaskId.toString()));
 		}
 		
 		@Test
@@ -148,11 +153,11 @@ public class TaskControllerTest {
 		@Test
 		@DisplayName("Should return OK and updated TaskDTO on successful update")
 		public void testUpdateTaskShouldReturnOkAndUpdatedTaskDTO() throws Exception {
-			TaskResponseDTO updatedResponseDTO = createResponse(1L, "title", "description-updated", LocalDate.parse("2025-10-01"), Status.DONE, Priority.HIGH);
+			TaskResponseDTO updatedResponseDTO = createResponse(existingTaskId, "title", "description-updated", LocalDate.parse("2025-10-01"), Status.DONE, Priority.HIGH);
 			
-			when(taskService.update(eq(1L), any(TaskRequestDTO.class))).thenReturn(updatedResponseDTO);
+			when(taskService.update(eq(existingTaskId), any(TaskRequestDTO.class))).thenReturn(updatedResponseDTO);
 			
-			mockMvc.perform(put("/api/v1/tasks/1")
+			mockMvc.perform(put("/api/v1/tasks/" + existingTaskId)
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(objectMapper.writeValueAsString(taskRequestDTO)))
 					.andExpect(status().isOk())
@@ -162,9 +167,9 @@ public class TaskControllerTest {
 		@Test
 		@DisplayName("Should return Not Found when ID does not exist for update")
 		public void testUpdateTaskShouldReturnNotFound() throws Exception {
-			when(taskService.update(eq(99L), any(TaskRequestDTO.class))).thenThrow(new ResourceNotFoundException("Task not found"));
+			when(taskService.update(eq(nonExistingTaskId), any(TaskRequestDTO.class))).thenThrow(new ResourceNotFoundException("Task not found"));
 			
-			mockMvc.perform(put("/api/v1/tasks/99")
+			mockMvc.perform(put("/api/v1/tasks/" + nonExistingTaskId)
 							.contentType(MediaType.APPLICATION_JSON)
 							.content(objectMapper.writeValueAsString(taskRequestDTO)))
 					.andExpect(status().isNotFound());
@@ -177,16 +182,16 @@ public class TaskControllerTest {
 		@Test
 		@DisplayName("Should return No Content on successful deletion")
 		public void testDeleteTaskShouldReturnNoContent() throws Exception {
-			mockMvc.perform(delete("/api/v1/tasks/1"))
+			mockMvc.perform(delete("/api/v1/tasks/" + existingTaskId))
 					.andExpect(status().isNoContent());
 		}
 		
 		@Test
 		@DisplayName("Should return Not Found when ID does not exist for deletion")
 		public void testDeleteTaskShouldReturnNotFound() throws Exception {
-			doThrow(new ResourceNotFoundException("Task not found")).when(taskService).delete(99L);
+			doThrow(new ResourceNotFoundException("Task not found")).when(taskService).delete(nonExistingTaskId);
 			
-			mockMvc.perform(delete("/api/v1/tasks/99"))
+			mockMvc.perform(delete("/api/v1/tasks/" + nonExistingTaskId))
 					.andExpect(status().isNotFound());
 		}
 	}
