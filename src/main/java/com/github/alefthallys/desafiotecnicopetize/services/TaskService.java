@@ -2,10 +2,15 @@ package com.github.alefthallys.desafiotecnicopetize.services;
 
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskResponseDTO;
+import com.github.alefthallys.desafiotecnicopetize.exceptions.AccessDeniedTaskException;
 import com.github.alefthallys.desafiotecnicopetize.exceptions.ResourceNotFoundException;
 import com.github.alefthallys.desafiotecnicopetize.models.Task;
+import com.github.alefthallys.desafiotecnicopetize.models.User;
 import com.github.alefthallys.desafiotecnicopetize.repositories.TaskRepository;
+import com.github.alefthallys.desafiotecnicopetize.repositories.UserRepository;
 import com.github.alefthallys.desafiotecnicopetize.utils.TaskMapperUtils;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,29 +20,52 @@ import java.util.UUID;
 public class TaskService {
 	
 	private final TaskRepository taskRepository;
+	private final UserRepository userRepository;
 	
-	public TaskService(TaskRepository taskRepository) {
+	public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
 		this.taskRepository = taskRepository;
+		this.userRepository = userRepository;
+	}
+	
+	private User getCurrentUser() {
+		String username = SecurityContextHolder.getContext().getAuthentication().getName();
+		User user = userRepository.findByUsername(username);
+		if (user == null) {
+			throw new ResourceNotFoundException("User not found");
+		}
+		return user;
 	}
 	
 	public List<TaskResponseDTO> findAll() {
-		return taskRepository.findAll().stream().map(TaskMapperUtils::toResponseDTO).toList();
+		User currentUser = getCurrentUser();
+		return taskRepository.findByUserId(currentUser.getId()).stream().map(TaskMapperUtils::toResponseDTO).toList();
 	}
 	
 	public TaskResponseDTO findById(UUID id) {
-		return taskRepository.findById(id)
-				.map(TaskMapperUtils::toResponseDTO)
+		User currentUser = getCurrentUser();
+		Task task = taskRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
+		if (!task.getUser().getId().equals(currentUser.getId())) {
+			throw new AccessDeniedTaskException("You do not have permission to view this task.");
+		}
+		return TaskMapperUtils.toResponseDTO(task);
 	}
 	
 	public TaskResponseDTO create(TaskRequestDTO taskRequestDTO) {
+		User currentUser = getCurrentUser();
 		Task task = TaskMapperUtils.toEntity(taskRequestDTO);
+		task.setUser(currentUser);
 		return TaskMapperUtils.toResponseDTO(taskRepository.save(task));
 	}
 	
 	public TaskResponseDTO update(UUID id, TaskRequestDTO taskRequestDTO) {
+		User currentUser = getCurrentUser();
 		Task existingTask = taskRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
+		
+		if (!existingTask.getUser().getId().equals(currentUser.getId())) {
+			throw new AccessDeniedTaskException("You do not have permission to update this task.");
+		}
 		
 		existingTask.setTitle(taskRequestDTO.title());
 		existingTask.setDescription(taskRequestDTO.description());
@@ -45,8 +73,7 @@ public class TaskService {
 		existingTask.setStatus(taskRequestDTO.status());
 		existingTask.setPriority(taskRequestDTO.priority());
 		
-		// Ensure mutable list for subtasks to avoid UnsupportedOperationException
-		existingTask.setSubTasks(new java.util.ArrayList<>());
+		existingTask.getSubTasks().clear();
 		if (taskRequestDTO.subTasks() != null) {
 			taskRequestDTO.subTasks().stream()
 					.map(subTaskDTO -> {
@@ -63,8 +90,14 @@ public class TaskService {
 	}
 	
 	public void delete(UUID id) {
+		User currentUser = getCurrentUser();
 		Task task = taskRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
+		
+		if (!task.getUser().getId().equals(currentUser.getId())) {
+			throw new AccessDeniedTaskException("You do not have permission to delete this task.");
+		}
+		
 		boolean hasTodoSubTask = task.getSubTasks() != null && task.getSubTasks().stream()
 				.anyMatch(subTask -> subTask.getStatus() == com.github.alefthallys.desafiotecnicopetize.enums.Status.TODO);
 		if (hasTodoSubTask) {
