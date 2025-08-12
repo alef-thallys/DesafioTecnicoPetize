@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update  # Use 'validate' or 'none' in prod, 'update' is for dev convenience
+      ddl-auto: update     # perfeito pra dev, mas em produção troca pra 'validate' ou 'none'
     show-sql: true
     properties:
       hibernate:

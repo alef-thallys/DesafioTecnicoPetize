@@ -2,6 +2,7 @@ package com.github.alefthallys.desafiotecnicopetize.dtos;
 
 import com.github.alefthallys.desafiotecnicopetize.enums.Priority;
 import com.github.alefthallys.desafiotecnicopetize.enums.Status;
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
@@ -17,6 +18,7 @@ public record TaskRequestDTO(
 		String description,
 		
 		@NotNull(message = "Due date cannot be null")
+		@Future(message = "Due date must be in the future")
 		LocalDate dueDate,
 		
 		@NotNull(message = "Status cannot be null")
