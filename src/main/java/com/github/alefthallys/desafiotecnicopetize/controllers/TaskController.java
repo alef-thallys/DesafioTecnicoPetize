@@ -4,6 +4,8 @@ import com.github.alefthallys.desafiotecnicopetize.assemblers.TaskResponseAssemb
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskResponseDTO;
 import com.github.alefthallys.desafiotecnicopetize.services.TaskService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -18,18 +20,19 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
+@Tag(name = "Tasks", description = "Endpoints for managing tasks")
 public class TaskController {
-	
-	private final TaskService taskService;
-	private final TaskResponseAssembler taskResponseAssembler;
-	
-	public TaskController(TaskService taskService, TaskResponseAssembler taskResponseAssembler) {
-		this.taskService = taskService;
-		this.taskResponseAssembler = taskResponseAssembler;
-	}
-	
-	@GetMapping
-	public ResponseEntity<CollectionModel<EntityModel<TaskResponseDTO>>> findAll() {
+    private final TaskService taskService;
+    private final TaskResponseAssembler taskResponseAssembler;
+
+    public TaskController(TaskService taskService, TaskResponseAssembler taskResponseAssembler) {
+        this.taskService = taskService;
+        this.taskResponseAssembler = taskResponseAssembler;
+    }
+
+    @GetMapping
+    @Operation(summary = "Get all tasks", description = "Returns a list of all tasks with HATEOAS links.")
+    public ResponseEntity<CollectionModel<EntityModel<TaskResponseDTO>>> findAll() {
         List<TaskResponseDTO> tasks = taskService.findAll();
         List<EntityModel<TaskResponseDTO>> taskResources = tasks.stream()
                 .map(taskResponseAssembler::toModel)
@@ -38,25 +41,35 @@ public class TaskController {
         collectionModel.add(WebMvcLinkBuilder.linkTo(WebMvcLinkBuilder.methodOn(TaskController.class).create(null)).withRel("create"));
         return ResponseEntity.ok(collectionModel);
     }
-	
-	@GetMapping("/{id}")
-	public ResponseEntity<TaskResponseDTO> findById(@PathVariable UUID id) {
-		return new ResponseEntity<>(taskService.findById(id), HttpStatus.OK);
-	}
-	
-	@PostMapping
-	public ResponseEntity<TaskResponseDTO> create(@RequestBody @Valid TaskRequestDTO taskRequestDTO) {
-		return new ResponseEntity<>(taskService.create(taskRequestDTO), HttpStatus.CREATED);
-	}
-	
-	@PutMapping("/{id}")
-	public ResponseEntity<TaskResponseDTO> update(@PathVariable UUID id, @RequestBody @Valid TaskRequestDTO taskRequestDTO) {
-		return new ResponseEntity<>(taskService.update(id, taskRequestDTO), HttpStatus.OK);
-	}
-	
-	@DeleteMapping("/{id}")
-	public ResponseEntity<Void> delete(@PathVariable UUID id) {
-		taskService.delete(id);
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-	}
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Get task by ID", description = "Returns a task by its ID.")
+    public ResponseEntity<EntityModel<TaskResponseDTO>> findById(@PathVariable UUID id) {
+        TaskResponseDTO task = taskService.findById(id);
+        EntityModel<TaskResponseDTO> resource = taskResponseAssembler.toModel(task);
+        return ResponseEntity.ok(resource);
+    }
+
+    @PostMapping
+    @Operation(summary = "Create a new task", description = "Creates a new task and returns it.")
+    public ResponseEntity<EntityModel<TaskResponseDTO>> create(@RequestBody @Valid TaskRequestDTO taskRequestDTO) {
+        TaskResponseDTO createdTask = taskService.create(taskRequestDTO);
+        EntityModel<TaskResponseDTO> resource = taskResponseAssembler.toModel(createdTask);
+        return ResponseEntity.status(HttpStatus.CREATED).body(resource);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Update a task", description = "Updates an existing task by its ID.")
+    public ResponseEntity<EntityModel<TaskResponseDTO>> update(@PathVariable UUID id, @RequestBody @Valid TaskRequestDTO taskRequestDTO) {
+        TaskResponseDTO updatedTask = taskService.update(id, taskRequestDTO);
+        EntityModel<TaskResponseDTO> resource = taskResponseAssembler.toModel(updatedTask);
+        return ResponseEntity.ok(resource);
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a task", description = "Deletes a task by its ID.")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        taskService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -2,6 +2,7 @@ package com.github.alefthallys.desafiotecnicopetize.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.github.alefthallys.desafiotecnicopetize.assemblers.TaskResponseAssembler;
 import com.github.alefthallys.desafiotecnicopetize.dtos.SubTaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.SubTaskResponseDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskRequestDTO;
@@ -13,6 +14,7 @@ import com.github.alefthallys.desafiotecnicopetize.services.TaskService;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -32,6 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TaskController.class)
+@Import(TaskResponseAssembler.class)
 @DisplayName("TaskController Tests")
 public class TaskControllerTest {
 	
@@ -82,24 +85,23 @@ public class TaskControllerTest {
 		@DisplayName("Should return list of TaskResponseDTO when tasks exist")
 		public void testFindAllTasksShouldReturnListOfTaskResponseDTO() throws Exception {
 			when(taskService.findAll()).thenReturn(List.of(taskResponseDTO, taskResponseDTO));
-			
+
 			mockMvc.perform(get("/api/v1/tasks"))
 					.andExpect(status().isOk())
-					.andExpect(jsonPath("$").isArray())
-					.andExpect(jsonPath("$").isNotEmpty())
-					.andExpect(jsonPath("$[0].id").value(existingTaskId.toString()))
-					.andExpect(jsonPath("$[0].subTasks[0].title").value("SubTask Title"));
+					.andExpect(jsonPath("$._embedded.taskResponseDTOList").isArray())
+					.andExpect(jsonPath("$._embedded.taskResponseDTOList").isNotEmpty())
+					.andExpect(jsonPath("$._embedded.taskResponseDTOList[0].id").value(existingTaskId.toString()))
+					.andExpect(jsonPath("$._embedded.taskResponseDTOList[0].subTasks[0].title").value("SubTask Title"));
 		}
-		
+
 		@Test
 		@DisplayName("Should return empty list when no tasks exist")
 		public void testFindAllTasksShouldReturnEmptyList() throws Exception {
 			when(taskService.findAll()).thenReturn(List.of());
-			
+
 			mockMvc.perform(get("/api/v1/tasks"))
 					.andExpect(status().isOk())
-					.andExpect(jsonPath("$").isArray())
-					.andExpect(jsonPath("$").isEmpty());
+					.andExpect(jsonPath("$._embedded").doesNotExist());
 		}
 	}
 	

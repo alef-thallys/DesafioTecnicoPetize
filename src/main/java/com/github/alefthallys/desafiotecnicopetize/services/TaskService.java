@@ -45,6 +45,7 @@ public class TaskService {
 		existingTask.setStatus(taskRequestDTO.status());
 		existingTask.setPriority(taskRequestDTO.priority());
 
+		existingTask.setSubTasks(new java.util.ArrayList<>(existingTask.getSubTasks()));
 		existingTask.getSubTasks().clear();
 		if (taskRequestDTO.subTasks() != null) {
 			for (var subTaskDTO : taskRequestDTO.subTasks()) {
