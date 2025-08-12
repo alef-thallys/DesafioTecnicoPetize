@@ -44,6 +44,17 @@ public class TaskService {
 		existingTask.setDueDate(taskRequestDTO.dueDate());
 		existingTask.setStatus(taskRequestDTO.status());
 		existingTask.setPriority(taskRequestDTO.priority());
+
+		existingTask.getSubTasks().clear();
+		if (taskRequestDTO.subTasks() != null) {
+			for (var subTaskDTO : taskRequestDTO.subTasks()) {
+				var subTask = new com.github.alefthallys.desafiotecnicopetize.models.SubTask();
+				subTask.setTitle(subTaskDTO.title());
+				subTask.setStatus(subTaskDTO.status());
+				subTask.setTask(existingTask);
+				existingTask.getSubTasks().add(subTask);
+			}
+		}
 		
 		return TaskMapperUtils.toResponseDTO(taskRepository.save(existingTask));
 	}
