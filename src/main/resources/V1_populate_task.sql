@@ -4,4 +4,3 @@ INSERT INTO tasks (id, title, description, due_date, status, priority, created_a
 (UUID_TO_BIN('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13'), 'Setup CI/CD Pipeline', 'Configure a continuous integration and deployment pipeline on GitHub Actions.', '2025-08-25', 'DONE', 'MEDIUM', NOW(), NOW()),
 (UUID_TO_BIN('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14'), 'Write API Documentation', 'Document all API endpoints using Swagger/OpenAPI.', '2025-09-01', 'TODO', 'LOW', NOW(), NOW()),
 (UUID_TO_BIN('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15'), 'Refactor Legacy Code', 'Refactor the old data processing module for better performance.', '2025-09-10', 'DONE', 'MEDIUM', NOW(), NOW());
-

@@ -1,13 +1,11 @@
 package com.github.alefthallys.desafiotecnicopetize.models;
 
-import com.github.alefthallys.desafiotecnicopetize.enums.Priority;
 import com.github.alefthallys.desafiotecnicopetize.enums.Status;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -16,9 +14,9 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tasks")
+@Table(name = "sub_tasks")
 @EqualsAndHashCode(of = "id")
-public class Task {
+public class SubTask {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
@@ -28,22 +26,13 @@ public class Task {
 	@Column(name = "title", nullable = false)
 	private String title;
 	
-	@Column(name = "description")
-	private String description;
-	
-	@Column(name = "due_date", nullable = false)
-	private LocalDate dueDate;
-	
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
 	private Status status;
 	
-	@Enumerated(EnumType.STRING)
-	@Column(name = "priority", nullable = false)
-	private Priority priority;
-	
-	@OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-	private java.util.List<SubTask> subTasks;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "task_id", nullable = false)
+	private Task task;
 	
 	@CreationTimestamp
 	@Column(name = "created_at", nullable = false, updatable = false)
