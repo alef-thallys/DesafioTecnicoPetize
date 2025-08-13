@@ -1,4 +1,4 @@
-CREATE TABLE sub_tasks (
+CREATE TABLE IF NOT EXISTS sub_tasks (
     id BINARY(16) NOT NULL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     status ENUM('TODO', 'DONE') NOT NULL,

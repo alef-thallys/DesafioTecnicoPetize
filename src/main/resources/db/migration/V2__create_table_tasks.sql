@@ -1,4 +1,4 @@
-CREATE TABLE tasks (
+CREATE TABLE IF NOT EXISTS tasks (
     id BINARY(16) NOT NULL PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     description TEXT,
