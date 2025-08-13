@@ -107,33 +107,33 @@ class TaskServiceTest {
 		@Test
 		@DisplayName("Should return list of TaskResponseDTO when tasks exist")
 		void testFindAllShouldReturnListOfTasks() {
-			when(taskRepository.findByUserModelId(userModel.getId())).thenReturn(List.of(taskModel));
+			when(taskRepository.findByFilters(userModel.getId(), null, null, null)).thenReturn(List.of(taskModel));
 			
-			List<TaskResponseDTO> result = taskService.findAll();
+			List<TaskResponseDTO> result = taskService.findAll(null, null, null);
 			
 			assertNotNull(result);
 			assertEquals(1, result.size());
 			assertTaskResponseEqualsTask(result.get(0), taskModel);
-			verify(taskRepository).findByUserModelId(userModel.getId());
+			verify(taskRepository).findByFilters(userModel.getId(), null, null, null);
 		}
 		
 		@Test
 		@DisplayName("Should return empty list when no tasks exist")
 		void testFindAllShouldReturnEmptyList() {
-			when(taskRepository.findByUserModelId(userModel.getId())).thenReturn(Collections.emptyList());
+			when(taskRepository.findByFilters(userModel.getId(), null, null, null)).thenReturn(Collections.emptyList());
 			
-			List<TaskResponseDTO> result = taskService.findAll();
+			List<TaskResponseDTO> result = taskService.findAll(null, null, null);
 			
 			assertNotNull(result);
 			assertTrue(result.isEmpty());
-			verify(taskRepository).findByUserModelId(userModel.getId());
+			verify(taskRepository).findByFilters(userModel.getId(), null, null, null);
 		}
 		
 		@Test
 		@DisplayName("Should throw ResourceNotFoundException when current user not found")
 		void testFindAllShouldThrowWhenUserNotFound() {
 			when(userRepository.findByUsername("testuser")).thenReturn(null);
-			assertThrows(ResourceNotFoundException.class, () -> taskService.findAll());
+			assertThrows(ResourceNotFoundException.class, () -> taskService.findAll(null, null, null));
 			verify(taskRepository, never()).findByUserModelId(any());
 		}
 	}

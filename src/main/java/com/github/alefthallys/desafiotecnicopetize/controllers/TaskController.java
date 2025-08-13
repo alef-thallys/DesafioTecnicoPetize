@@ -33,9 +33,13 @@ public class TaskController {
 	}
 	
 	@GetMapping
-	@Operation(summary = "Get all tasks", description = "Returns a list of all tasks with HATEOAS links.")
-	public ResponseEntity<CollectionModel<EntityModel<TaskResponseDTO>>> findAll() {
-		List<TaskResponseDTO> tasks = taskService.findAll();
+	@Operation(summary = "Get all tasks", description = "Returns a list of all tasks with HATEOAS links. Supports filtering by status, priority, and due date.")
+	public ResponseEntity<CollectionModel<EntityModel<TaskResponseDTO>>> findAll(
+			@RequestParam(value = "status", required = false) String status,
+			@RequestParam(value = "priority", required = false) String priority,
+			@RequestParam(value = "dueDate", required = false) String dueDate
+	) {
+		List<TaskResponseDTO> tasks = taskService.findAll(status, priority, dueDate);
 		List<EntityModel<TaskResponseDTO>> taskResources = tasks.stream()
 				.map(taskResponseAssembler::toModel)
 				.collect(Collectors.toList());

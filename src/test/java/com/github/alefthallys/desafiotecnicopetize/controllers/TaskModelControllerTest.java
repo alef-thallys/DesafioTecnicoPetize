@@ -102,7 +102,7 @@ public class TaskModelControllerTest {
 		@Test
 		@DisplayName("Should return list of TaskResponseDTO when tasks exist")
 		public void testFindAllTasksShouldReturnListOfTaskResponseDTO() throws Exception {
-			when(taskService.findAll()).thenReturn(List.of(taskResponseDTO, taskResponseDTO));
+			when(taskService.findAll(null, null, null)).thenReturn(List.of(taskResponseDTO, taskResponseDTO));
 			
 			mockMvc.perform(get("/api/v1/tasks"))
 					.andExpect(status().isOk())
@@ -116,7 +116,7 @@ public class TaskModelControllerTest {
 		@Test
 		@DisplayName("Should return empty list when no tasks exist")
 		public void testFindAllTasksShouldReturnEmptyList() throws Exception {
-			when(taskService.findAll()).thenReturn(List.of());
+			when(taskService.findAll(null, null, null)).thenReturn(List.of());
 			
 			mockMvc.perform(get("/api/v1/tasks"))
 					.andExpect(status().isOk())
