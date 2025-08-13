@@ -39,6 +39,17 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
 	}
 	
+	@ExceptionHandler(InvalidCredentials.class)
+	public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentials ex) {
+		ErrorResponse error = new ErrorResponse(
+				LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
+				HttpStatus.FORBIDDEN.value(),
+				"Access Denied",
+				ex.getMessage()
+		);
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+	}
+	
 	@ExceptionHandler(UserAlreadyExistException.class)
 	public ResponseEntity<ErrorResponse> handleUserAlreadyExists(UserAlreadyExistException ex) {
 		ErrorResponse error = new ErrorResponse(

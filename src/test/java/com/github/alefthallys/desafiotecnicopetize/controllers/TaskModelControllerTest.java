@@ -42,19 +42,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("TaskController Tests")
 @WithMockUser
 public class TaskModelControllerTest {
-
+	
 	@Autowired
 	private MockMvc mockMvc;
 	
 	@MockitoBean
 	private TaskService taskService;
-
+	
 	@MockitoBean
 	private TokenService tokenService;
-
+	
 	@MockitoBean
 	private UserRepository userRepository;
-
+	
 	@MockitoBean
 	private AuthorizationService authorizationService;
 	

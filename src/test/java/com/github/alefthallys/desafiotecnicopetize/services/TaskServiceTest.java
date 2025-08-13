@@ -33,7 +33,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("TaskService Tests")
-class TaskModelServiceTest {
+class TaskServiceTest {
 	
 	@Mock
 	private TaskRepository taskRepository;

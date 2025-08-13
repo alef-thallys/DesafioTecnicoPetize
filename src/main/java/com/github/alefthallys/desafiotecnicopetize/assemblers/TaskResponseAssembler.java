@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Component
 public class TaskResponseAssembler implements RepresentationModelAssembler<TaskResponseDTO, EntityModel<TaskResponseDTO>> {
-
+	
 	@Override
 	public EntityModel<TaskResponseDTO> toModel(TaskResponseDTO task) {
 		UUID id = task.id();
