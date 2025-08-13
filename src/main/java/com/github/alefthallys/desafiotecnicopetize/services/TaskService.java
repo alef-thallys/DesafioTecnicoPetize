@@ -1,5 +1,6 @@
 package com.github.alefthallys.desafiotecnicopetize.services;
 
+import com.github.alefthallys.desafiotecnicopetize.dtos.SubTaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskResponseDTO;
 import com.github.alefthallys.desafiotecnicopetize.exceptions.AccessDeniedTaskException;
@@ -10,6 +11,7 @@ import com.github.alefthallys.desafiotecnicopetize.models.UserModel;
 import com.github.alefthallys.desafiotecnicopetize.repositories.TaskRepository;
 import com.github.alefthallys.desafiotecnicopetize.repositories.UserRepository;
 import com.github.alefthallys.desafiotecnicopetize.utils.TaskMapperUtils;
+import jakarta.validation.Valid;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +58,20 @@ public class TaskService {
 		TaskModel taskModel = TaskMapperUtils.toEntity(taskRequestDTO);
 		taskModel.setUserModel(currentUserModel);
 		return TaskMapperUtils.toResponseDTO(taskRepository.save(taskModel));
+	}
+	
+	public TaskResponseDTO createSubtasks(UUID id, @Valid SubTaskRequestDTO subTaskRequestDTO) {
+		UserModel currentUserModel = getCurrentUser();
+		TaskModel taskModel = taskRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
+		if (!taskModel.getUserModel().getId().equals(currentUserModel.getId())) {
+			throw new AccessDeniedTaskException("You do not have permission to add subtasks to this task.");
+		}
+		SubTaskModel subTaskModel = TaskMapperUtils.toSubTaskEntity(subTaskRequestDTO);
+		subTaskModel.setTaskModel(taskModel);
+		taskModel.getSubTaskModels().add(subTaskModel);
+		TaskModel updatedTaskModel = taskRepository.save(taskModel);
+		return TaskMapperUtils.toResponseDTO(updatedTaskModel);
 	}
 	
 	public TaskResponseDTO update(UUID id, TaskRequestDTO taskRequestDTO) {

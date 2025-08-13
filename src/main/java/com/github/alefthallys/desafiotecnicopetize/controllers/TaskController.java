@@ -1,6 +1,7 @@
 package com.github.alefthallys.desafiotecnicopetize.controllers;
 
 import com.github.alefthallys.desafiotecnicopetize.assemblers.TaskResponseAssembler;
+import com.github.alefthallys.desafiotecnicopetize.dtos.SubTaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskResponseDTO;
 import com.github.alefthallys.desafiotecnicopetize.services.TaskService;
@@ -56,6 +57,14 @@ public class TaskController {
 	public ResponseEntity<EntityModel<TaskResponseDTO>> create(@RequestBody @Valid TaskRequestDTO taskRequestDTO) {
 		TaskResponseDTO createdTask = taskService.create(taskRequestDTO);
 		EntityModel<TaskResponseDTO> resource = taskResponseAssembler.toModel(createdTask);
+		return ResponseEntity.status(HttpStatus.CREATED).body(resource);
+	}
+	
+	@PostMapping(consumes = "application/json", value = "/{id}/subtasks")
+	@Operation(summary = "Create subtasks", description = "Creates subtasks for a given task ID and returns the updated task.")
+	public ResponseEntity<EntityModel<TaskResponseDTO>> createSubtasks(@PathVariable UUID id, @RequestBody @Valid SubTaskRequestDTO subTaskRequestDTO) {
+		TaskResponseDTO updatedTask = taskService.createSubtasks(id, subTaskRequestDTO);
+		EntityModel<TaskResponseDTO> resource = taskResponseAssembler.toModel(updatedTask);
 		return ResponseEntity.status(HttpStatus.CREATED).body(resource);
 	}
 	
