@@ -1,5 +1,6 @@
 package com.github.alefthallys.desafiotecnicopetize.models;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.github.alefthallys.desafiotecnicopetize.enums.Priority;
 import com.github.alefthallys.desafiotecnicopetize.enums.Status;
@@ -19,20 +20,21 @@ import java.util.UUID;
 @AllArgsConstructor
 @Table(name = "tasks")
 @EqualsAndHashCode(of = "id")
-public class Task {
+public class TaskModel {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "id")
 	private UUID id;
 	
-	@Column(name = "title", nullable = false)
+	@Column(name = "title", nullable = false, length = 255)
 	private String title;
 	
-	@Column(name = "description")
+	@Column(name = "description", length = 1000)
 	private String description;
 	
-	@Column(name = "due_date", nullable = false)
+	@Column(name = "due_date", nullable = false, columnDefinition = "DATE")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate dueDate;
 	
 	@Enumerated(EnumType.STRING)
@@ -43,13 +45,13 @@ public class Task {
 	@Column(name = "priority", nullable = false)
 	private Priority priority;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "user_id", nullable = false)
-	private User user;
+	private UserModel userModel;
 	
-	@OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "taskModel", cascade = CascadeType.ALL, orphanRemoval = true)
 	@JsonManagedReference
-	private List<SubTask> subTasks = new ArrayList<>();
+	private List<SubTaskModel> subTaskModels = new ArrayList<>();
 	
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;

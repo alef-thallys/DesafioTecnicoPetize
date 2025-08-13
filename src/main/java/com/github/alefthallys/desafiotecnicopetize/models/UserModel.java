@@ -18,7 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Table(name = "users")
 @EqualsAndHashCode(of = "id")
-public class User implements UserDetails {
+public class UserModel implements UserDetails {
 	
 	@Id
 	@GeneratedValue(strategy = jakarta.persistence.GenerationType.UUID)
@@ -34,7 +34,7 @@ public class User implements UserDetails {
 	@Column(name = "role", nullable = false)
 	private Role role;
 	
-	public User(String username, String encryptedPassword, Role role) {
+	public UserModel(String username, String encryptedPassword, Role role) {
 		this.username = username;
 		this.password = encryptedPassword;
 		this.role = role;

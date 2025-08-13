@@ -15,24 +15,24 @@ import java.util.UUID;
 @AllArgsConstructor
 @Table(name = "sub_tasks")
 @EqualsAndHashCode(of = "id")
-public class SubTask {
+public class SubTaskModel {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "id")
 	private UUID id;
 	
-	@Column(name = "title", nullable = false)
+	@Column(name = "title", nullable = false, length = 255)
 	private String title;
 	
 	@Enumerated(EnumType.STRING)
 	@Column(name = "status", nullable = false)
 	private Status status;
 	
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "task_id", nullable = false)
 	@JsonBackReference
-	private Task task;
+	private TaskModel taskModel;
 	
 	@Column(name = "created_at", nullable = false, updatable = false)
 	private LocalDateTime createdAt;

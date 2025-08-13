@@ -5,60 +5,60 @@ import com.github.alefthallys.desafiotecnicopetize.dtos.SubTaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.SubTaskResponseDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskResponseDTO;
-import com.github.alefthallys.desafiotecnicopetize.models.SubTask;
-import com.github.alefthallys.desafiotecnicopetize.models.Task;
+import com.github.alefthallys.desafiotecnicopetize.models.SubTaskModel;
+import com.github.alefthallys.desafiotecnicopetize.models.TaskModel;
 
 import java.util.stream.Collectors;
 
 public class TaskMapperUtils {
 	
-	public static Task toEntity(TaskRequestDTO dto) {
-		Task task = new Task();
-		task.setTitle(dto.title());
-		task.setDescription(dto.description());
-		task.setDueDate(dto.dueDate());
-		task.setStatus(dto.status());
-		task.setPriority(dto.priority());
+	public static TaskModel toEntity(TaskRequestDTO dto) {
+		TaskModel taskModel = new TaskModel();
+		taskModel.setTitle(dto.title());
+		taskModel.setDescription(dto.description());
+		taskModel.setDueDate(dto.dueDate());
+		taskModel.setStatus(dto.status());
+		taskModel.setPriority(dto.priority());
 		
 		if (dto.subTasks() != null) {
 			dto.subTasks().forEach(subTaskDto -> {
-				SubTask subTask = toSubTaskEntity(subTaskDto);
-				subTask.setTask(task);
-				task.getSubTasks().add(subTask);
+				SubTaskModel subTaskModel = toSubTaskEntity(subTaskDto);
+				subTaskModel.setTaskModel(taskModel);
+				taskModel.getSubTaskModels().add(subTaskModel);
 			});
 		}
 		
-		return task;
+		return taskModel;
 	}
 	
-	public static TaskResponseDTO toResponseDTO(Task task) {
+	public static TaskResponseDTO toResponseDTO(TaskModel taskModel) {
 		return new TaskResponseDTO(
-				task.getId(),
-				task.getTitle(),
-				task.getDescription(),
-				task.getDueDate(),
-				task.getStatus(),
-				task.getPriority(),
-				task.getCreatedAt(),
-				task.getUpdatedAt(),
-				task.getSubTasks().stream().map(TaskMapperUtils::toResponseDTO).collect(Collectors.toList())
+				taskModel.getId(),
+				taskModel.getTitle(),
+				taskModel.getDescription(),
+				taskModel.getDueDate(),
+				taskModel.getStatus(),
+				taskModel.getPriority(),
+				taskModel.getCreatedAt(),
+				taskModel.getUpdatedAt(),
+				taskModel.getSubTaskModels().stream().map(TaskMapperUtils::toResponseDTO).collect(Collectors.toList())
 		);
 	}
 	
-	public static SubTask toSubTaskEntity(SubTaskRequestDTO dto) {
-		SubTask subTask = new SubTask();
-		subTask.setTitle(dto.title());
-		subTask.setStatus(dto.status());
-		return subTask;
+	public static SubTaskModel toSubTaskEntity(SubTaskRequestDTO dto) {
+		SubTaskModel subTaskModel = new SubTaskModel();
+		subTaskModel.setTitle(dto.title());
+		subTaskModel.setStatus(dto.status());
+		return subTaskModel;
 	}
 	
-	public static SubTaskResponseDTO toResponseDTO(SubTask subTask) {
+	public static SubTaskResponseDTO toResponseDTO(SubTaskModel subTaskModel) {
 		return new SubTaskResponseDTO(
-				subTask.getId(),
-				subTask.getTitle(),
-				subTask.getStatus(),
-				subTask.getCreatedAt(),
-				subTask.getUpdatedAt()
+				subTaskModel.getId(),
+				subTaskModel.getTitle(),
+				subTaskModel.getStatus(),
+				subTaskModel.getCreatedAt(),
+				subTaskModel.getUpdatedAt()
 		);
 	}
 }

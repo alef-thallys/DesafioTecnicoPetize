@@ -41,7 +41,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Import(TaskResponseAssembler.class)
 @DisplayName("TaskController Tests")
 @WithMockUser
-public class TaskControllerTest {
+public class TaskModelControllerTest {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -127,7 +127,7 @@ public class TaskControllerTest {
 	
 	@Nested
 	@DisplayName("Tests for findById")
-	class FindTaskByIdTests {
+	class FindTaskModelByIdTests {
 		@Test
 		@DisplayName("Should return TaskResponseDTO when ID exists")
 		public void testFindTaskByIdShouldReturnTaskResponseDTO() throws Exception {
@@ -152,7 +152,7 @@ public class TaskControllerTest {
 	
 	@Nested
 	@DisplayName("Tests for create")
-	class CreateTaskTests {
+	class CreateTaskModelTests {
 		@Test
 		@DisplayName("Should return Created and TaskDTO on successful creation")
 		public void testCreateTaskShouldReturnCreatedAndTaskDTO() throws Exception {
@@ -183,7 +183,7 @@ public class TaskControllerTest {
 	
 	@Nested
 	@DisplayName("Tests for update")
-	class UpdateTaskTests {
+	class UpdateTaskModelTests {
 		@Test
 		@DisplayName("Should return OK and updated TaskDTO on successful update")
 		public void testUpdateTaskShouldReturnOkAndUpdatedTaskDTO() throws Exception {
@@ -217,7 +217,7 @@ public class TaskControllerTest {
 	
 	@Nested
 	@DisplayName("Tests for delete")
-	class DeleteTaskTests {
+	class DeleteTaskModelTests {
 		@Test
 		@DisplayName("Should return No Content on successful deletion")
 		public void testDeleteTaskShouldReturnNoContent() throws Exception {

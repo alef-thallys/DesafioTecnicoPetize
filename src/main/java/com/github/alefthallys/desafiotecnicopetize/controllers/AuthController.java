@@ -2,10 +2,10 @@ package com.github.alefthallys.desafiotecnicopetize.controllers;
 
 import com.github.alefthallys.desafiotecnicopetize.dtos.LoginRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.LoginResponseDTO;
-import com.github.alefthallys.desafiotecnicopetize.dtos.RegisterDTO;
+import com.github.alefthallys.desafiotecnicopetize.dtos.RegisterRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.enums.Role;
 import com.github.alefthallys.desafiotecnicopetize.exceptions.UserAlreadyExistException;
-import com.github.alefthallys.desafiotecnicopetize.models.User;
+import com.github.alefthallys.desafiotecnicopetize.models.UserModel;
 import com.github.alefthallys.desafiotecnicopetize.repositories.UserRepository;
 import com.github.alefthallys.desafiotecnicopetize.security.TokenService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,9 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Authentication", description = "Endpoints for user authentication and registration")
 public class AuthController {
 	
-	private AuthenticationManager authenticationManager;
-	private UserRepository repository;
-	private TokenService tokenService;
+	private final AuthenticationManager authenticationManager;
+	private final UserRepository repository;
+	private final TokenService tokenService;
 	
 	public AuthController(AuthenticationManager authenticationManager, UserRepository repository, TokenService tokenService) {
 		this.authenticationManager = authenticationManager;
@@ -42,7 +42,7 @@ public class AuthController {
 		try {
 			UsernamePasswordAuthenticationToken usernamePassword = new UsernamePasswordAuthenticationToken(loginRequestDTO.username(), loginRequestDTO.password());
 			Authentication auth = this.authenticationManager.authenticate(usernamePassword);
-			String token = tokenService.generateToken((User) auth.getPrincipal());
+			String token = tokenService.generateToken((UserModel) auth.getPrincipal());
 			return ResponseEntity.ok(new LoginResponseDTO(token));
 		} catch (RuntimeException e) {
 			return ResponseEntity.status(403).build();
@@ -51,14 +51,14 @@ public class AuthController {
 	
 	@PostMapping("/register")
 	@Operation(summary = "User registration", description = "Registers a new user.")
-	public ResponseEntity<Void> register(@RequestBody @Valid RegisterDTO registerDTO) {
-		if (repository.findByUsername(registerDTO.username()) != null) {
-			throw new UserAlreadyExistException("User already exists with username: " + registerDTO.username());
+	public ResponseEntity<Void> register(@RequestBody @Valid RegisterRequestDTO registerRequestDTO) {
+		if (repository.findByUsername(registerRequestDTO.username()) != null) {
+			throw new UserAlreadyExistException("User already exists with username: " + registerRequestDTO.username());
 		}
 		
-		String encryptedPassword = new BCryptPasswordEncoder().encode(registerDTO.password());
-		User newUser = new User(registerDTO.username(), encryptedPassword, Role.USER);
-		this.repository.save(newUser);
+		String encryptedPassword = new BCryptPasswordEncoder().encode(registerRequestDTO.password());
+		UserModel newUserModel = new UserModel(registerRequestDTO.username(), encryptedPassword, Role.USER);
+		this.repository.save(newUserModel);
 		return ResponseEntity.noContent().build();
 	}
 }

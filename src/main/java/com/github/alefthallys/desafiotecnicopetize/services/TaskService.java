@@ -4,8 +4,9 @@ import com.github.alefthallys.desafiotecnicopetize.dtos.TaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskResponseDTO;
 import com.github.alefthallys.desafiotecnicopetize.exceptions.AccessDeniedTaskException;
 import com.github.alefthallys.desafiotecnicopetize.exceptions.ResourceNotFoundException;
-import com.github.alefthallys.desafiotecnicopetize.models.Task;
-import com.github.alefthallys.desafiotecnicopetize.models.User;
+import com.github.alefthallys.desafiotecnicopetize.models.SubTaskModel;
+import com.github.alefthallys.desafiotecnicopetize.models.TaskModel;
+import com.github.alefthallys.desafiotecnicopetize.models.UserModel;
 import com.github.alefthallys.desafiotecnicopetize.repositories.TaskRepository;
 import com.github.alefthallys.desafiotecnicopetize.repositories.UserRepository;
 import com.github.alefthallys.desafiotecnicopetize.utils.TaskMapperUtils;
@@ -26,79 +27,79 @@ public class TaskService {
 		this.userRepository = userRepository;
 	}
 	
-	private User getCurrentUser() {
+	private UserModel getCurrentUser() {
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
-		User user = userRepository.findByUsername(username);
-		if (user == null) {
+		UserModel userModel = userRepository.findByUsername(username);
+		if (userModel == null) {
 			throw new ResourceNotFoundException("User not found");
 		}
-		return user;
+		return userModel;
 	}
 	
 	public List<TaskResponseDTO> findAll() {
-		User currentUser = getCurrentUser();
-		return taskRepository.findByUserId(currentUser.getId()).stream().map(TaskMapperUtils::toResponseDTO).toList();
+		UserModel currentUserModel = getCurrentUser();
+		return taskRepository.findByUserModelId(currentUserModel.getId()).stream().map(TaskMapperUtils::toResponseDTO).toList();
 	}
 	
 	public TaskResponseDTO findById(UUID id) {
-		User currentUser = getCurrentUser();
-		Task task = taskRepository.findById(id)
+		UserModel currentUserModel = getCurrentUser();
+		TaskModel taskModel = taskRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
-		if (!task.getUser().getId().equals(currentUser.getId())) {
+		if (!taskModel.getUserModel().getId().equals(currentUserModel.getId())) {
 			throw new AccessDeniedTaskException("You do not have permission to view this task.");
 		}
-		return TaskMapperUtils.toResponseDTO(task);
+		return TaskMapperUtils.toResponseDTO(taskModel);
 	}
 	
 	public TaskResponseDTO create(TaskRequestDTO taskRequestDTO) {
-		User currentUser = getCurrentUser();
-		Task task = TaskMapperUtils.toEntity(taskRequestDTO);
-		task.setUser(currentUser);
-		return TaskMapperUtils.toResponseDTO(taskRepository.save(task));
+		UserModel currentUserModel = getCurrentUser();
+		TaskModel taskModel = TaskMapperUtils.toEntity(taskRequestDTO);
+		taskModel.setUserModel(currentUserModel);
+		return TaskMapperUtils.toResponseDTO(taskRepository.save(taskModel));
 	}
 	
 	public TaskResponseDTO update(UUID id, TaskRequestDTO taskRequestDTO) {
-		User currentUser = getCurrentUser();
-		Task existingTask = taskRepository.findById(id)
+		UserModel currentUserModel = getCurrentUser();
+		TaskModel existingTaskModel = taskRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
 		
-		if (!existingTask.getUser().getId().equals(currentUser.getId())) {
+		if (!existingTaskModel.getUserModel().getId().equals(currentUserModel.getId())) {
 			throw new AccessDeniedTaskException("You do not have permission to update this task.");
 		}
 		
-		existingTask.setTitle(taskRequestDTO.title());
-		existingTask.setDescription(taskRequestDTO.description());
-		existingTask.setDueDate(taskRequestDTO.dueDate());
-		existingTask.setStatus(taskRequestDTO.status());
-		existingTask.setPriority(taskRequestDTO.priority());
+		existingTaskModel.setTitle(taskRequestDTO.title());
+		existingTaskModel.setDescription(taskRequestDTO.description());
+		existingTaskModel.setDueDate(taskRequestDTO.dueDate());
+		existingTaskModel.setStatus(taskRequestDTO.status());
+		existingTaskModel.setPriority(taskRequestDTO.priority());
 		
-		existingTask.getSubTasks().clear();
+		existingTaskModel.getSubTaskModels().clear();
 		if (taskRequestDTO.subTasks() != null) {
 			taskRequestDTO.subTasks().stream()
 					.map(subTaskDTO -> {
-						var subTask = new com.github.alefthallys.desafiotecnicopetize.models.SubTask();
+						var subTask = new SubTaskModel();
 						subTask.setTitle(subTaskDTO.title());
 						subTask.setStatus(subTaskDTO.status());
-						subTask.setTask(existingTask);
+						subTask.setTaskModel(existingTaskModel);
 						return subTask;
 					})
-					.forEach(existingTask.getSubTasks()::add);
+					.forEach(existingTaskModel.getSubTaskModels()::add);
 		}
 		
-		return TaskMapperUtils.toResponseDTO(taskRepository.save(existingTask));
+		return TaskMapperUtils.toResponseDTO(taskRepository.save(existingTaskModel));
 	}
 	
 	public void delete(UUID id) {
-		User currentUser = getCurrentUser();
-		Task task = taskRepository.findById(id)
+		UserModel currentUserModel = getCurrentUser();
+		TaskModel taskModel = taskRepository.findById(id)
 				.orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
 		
-		if (!task.getUser().getId().equals(currentUser.getId())) {
+		if (!taskModel.getUserModel().getId().equals(currentUserModel.getId())) {
 			throw new AccessDeniedTaskException("You do not have permission to delete this task.");
 		}
 		
-		boolean hasTodoSubTask = task.getSubTasks() != null && task.getSubTasks().stream()
-				.anyMatch(subTask -> subTask.getStatus() == com.github.alefthallys.desafiotecnicopetize.enums.Status.TODO);
+		boolean hasTodoSubTask = taskModel.getSubTaskModels() != null && taskModel.getSubTaskModels().stream()
+				.anyMatch(subTaskModel -> subTaskModel.getStatus() == com.github.alefthallys.desafiotecnicopetize.enums.Status.TODO);
 		if (hasTodoSubTask) {
 			throw new IllegalStateException("Cannot delete a Task with SubTasks in TODO status");
 		}

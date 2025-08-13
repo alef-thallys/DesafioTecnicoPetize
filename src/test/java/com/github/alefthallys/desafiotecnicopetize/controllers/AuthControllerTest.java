@@ -2,8 +2,8 @@ package com.github.alefthallys.desafiotecnicopetize.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.alefthallys.desafiotecnicopetize.dtos.LoginRequestDTO;
-import com.github.alefthallys.desafiotecnicopetize.dtos.RegisterDTO;
-import com.github.alefthallys.desafiotecnicopetize.models.User;
+import com.github.alefthallys.desafiotecnicopetize.dtos.RegisterRequestDTO;
+import com.github.alefthallys.desafiotecnicopetize.models.UserModel;
 import com.github.alefthallys.desafiotecnicopetize.repositories.UserRepository;
 import com.github.alefthallys.desafiotecnicopetize.security.SecurityConfigurations;
 import com.github.alefthallys.desafiotecnicopetize.security.TokenService;
@@ -50,19 +50,19 @@ class AuthControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private User user;
+    private UserModel userModel;
     private LoginRequestDTO loginRequestDTO;
-    private RegisterDTO registerDTO;
+    private RegisterRequestDTO registerRequestDTO;
 
     @BeforeEach
     void setUp() {
-        user = new User();
-        user.setId(UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a31"));
-        user.setUsername("testuser");
-        user.setPassword("password");
+        userModel = new UserModel();
+        userModel.setId(UUID.fromString("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a31"));
+        userModel.setUsername("testuser");
+        userModel.setPassword("password");
 
         loginRequestDTO = new LoginRequestDTO("testuser", "password");
-        registerDTO = new RegisterDTO("newuser", "password");
+        registerRequestDTO = new RegisterRequestDTO("newuser", "password");
     }
 
     @Nested
@@ -72,9 +72,9 @@ class AuthControllerTest {
         @DisplayName("Should return JWT token when login is successful")
         void loginSuccess() throws Exception {
             Authentication auth = mock(Authentication.class);
-            when(auth.getPrincipal()).thenReturn(user);
+            when(auth.getPrincipal()).thenReturn(userModel);
             when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
-            when(tokenService.generateToken(any(User.class))).thenReturn("test-token");
+            when(tokenService.generateToken(any(UserModel.class))).thenReturn("test-token");
 
             mockMvc.perform(post("/api/v1/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
@@ -102,22 +102,22 @@ class AuthControllerTest {
         @Test
         @DisplayName("Should register a new user successfully")
         void registerSuccess() throws Exception {
-            when(userRepository.findByUsername(registerDTO.username())).thenReturn(null);
+            when(userRepository.findByUsername(registerRequestDTO.username())).thenReturn(null);
 
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(registerDTO)))
+                            .content(objectMapper.writeValueAsString(registerRequestDTO)))
                     .andExpect(status().isNoContent());
         }
 
         @Test
         @DisplayName("Should return 409 when user already exists")
         void registerUserAlreadyExists() throws Exception {
-            when(userRepository.findByUsername(registerDTO.username())).thenReturn(user);
+            when(userRepository.findByUsername(registerRequestDTO.username())).thenReturn(userModel);
 
             mockMvc.perform(post("/api/v1/auth/register")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(registerDTO)))
+                            .content(objectMapper.writeValueAsString(registerRequestDTO)))
                     .andExpect(status().isConflict());
         }
     }
