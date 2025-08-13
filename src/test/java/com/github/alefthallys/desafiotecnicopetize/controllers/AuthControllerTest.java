@@ -5,7 +5,7 @@ import com.github.alefthallys.desafiotecnicopetize.dtos.LoginRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.RegisterRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.models.UserModel;
 import com.github.alefthallys.desafiotecnicopetize.repositories.UserRepository;
-import com.github.alefthallys.desafiotecnicopetize.security.SecurityConfigurations;
+import com.github.alefthallys.desafiotecnicopetize.config.SecurityConfig;
 import com.github.alefthallys.desafiotecnicopetize.security.TokenService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
-@Import(SecurityConfigurations.class)
+@Import(SecurityConfig.class)
 @DisplayName("AuthController Tests")
 class AuthControllerTest {
 

@@ -1,5 +1,6 @@
-package com.github.alefthallys.desafiotecnicopetize.security;
+package com.github.alefthallys.desafiotecnicopetize.config;
 
+import com.github.alefthallys.desafiotecnicopetize.security.SecurityFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,11 +15,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfigurations {
+public class SecurityConfig {
 	
 	private final SecurityFilter securityFilter;
 	
-	public SecurityConfigurations(SecurityFilter securityFilter) {
+	public SecurityConfig(SecurityFilter securityFilter) {
 		this.securityFilter = securityFilter;
 	}
 	
@@ -26,6 +27,7 @@ public class SecurityConfigurations {
 	public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 		return httpSecurity
 				.csrf(csrf -> csrf.disable())
+				.cors(cors -> cors.disable())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(authorize -> authorize
 						.requestMatchers("/api/v1/auth/login").permitAll()
