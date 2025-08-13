@@ -2,11 +2,11 @@
 
 ![Java](https://img.shields.io/badge/Java-17-orange)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.5-brightgreen)
-![Tests](https://img.shields.io/badge/Coverage-90%25-success)
+![Tests](https://img.shields.io/badge/Coverage-91%25-success)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-API RESTful para gerenciamento de tarefas e subtarefas, desenvolvida com **Spring Boot 3.4.5**, **Java 17** e **TDD**, atingindo **90% de cobertura de testes**. Foco em segurança, escalabilidade e boas práticas de mercado.
+API RESTful para gerenciamento de tarefas e subtarefas, desenvolvida com **Spring Boot 3.4.5**, **Java 17** e **TDD**, atingindo **91% de cobertura de testes**. Foco em segurança, escalabilidade e boas práticas de mercado.
 
 Inclui autenticação JWT, documentação interativa via Swagger e ambiente pronto para rodar com Docker.
 
@@ -41,20 +41,22 @@ Inclui autenticação JWT, documentação interativa via Swagger e ambiente pron
 
 Desenvolvido com **Test-Driven Development (TDD)** para garantir robustez e confiabilidade.
 
-| Módulo       | Cobertura de Classe | Cobertura de Método | Cobertura de Linha |
-|--------------|--------------------|---------------------|-------------------|
-| Geral        | 100%               | 79%                 | 90%               |
-| assemblers   | 100%               | 100%                | 100%              |
-| controllers  | 100%               | 90%                 | 92%               |
-| dtos         | 100%               | 100%                | 100%              |
-| enums        | 100%               | 100%                | 100%              |
-| models       | 100%               | 64%                 | 64%               |
-| repositories | 100%               | —                   | —                 |
-| security     | 100%               | 100%                | 97%               |
-| services     | 100%               | 90%                 | 98%               |
-| utils        | 100%               | 100%                | 100%              |
+| Módulo         | Cobertura de Classe | Cobertura de Método | Cobertura de Linha |
+|----------------|--------------------|---------------------|-------------------|
+| Geral          | 96% (32/33)        | 85% (97/113)        | 91% (290/316)     |
+| assemblers     | 100% (1/1)         | 100% (1/1)          | 100% (11/11)      |
+| config         | 100% (4/4)         | 100% (9/9)          | 100% (23/23)      |
+| controllers    | 100% (2/2)         | 100% (9/9)          | 100% (25/25)      |
+| dtos           | 100% (7/7)         | 100% (7/7)          | 100% (29/29)      |
+| enums          | 100% (3/3)         | 100% (6/6)          | 100% (9/9)        |
+| exceptions     | 100% (6/6)         | 92% (13/14)         | 88% (60/68)       |
+| models         | 100% (3/3)         | 69% (29/42)         | 68% (33/48)       |
+| repositories   | 0% (0/0)           | 100% (0/0)          | 100% (0/0)        |
+| security       | 100% (2/2)         | 100% (7/7)          | 100% (17/17)      |
+| services       | 100% (3/3)         | 92% (12/13)         | 98% (67/68)       |
+| utils          | 100% (1/1)         | 100% (5/5)          | 100% (32/32)      |
 
-Cobertura menor em `models` e `repositories` é comum, pois essas camadas contêm pouca lógica de negócio.
+Cobertura menor em `models` e `exceptions` é comum devido à baixa complexidade de lógica nessas camadas.
 
 ---
 
