@@ -26,14 +26,31 @@ Inclui autenticação JWT, documentação interativa via Swagger e ambiente pron
 
 ---
 
+
+
 ## Principais Funcionalidades
 
-- Autenticação segura: login e registro de usuários com JWT.
-- CRUD completo: criação, leitura, atualização e exclusão de tarefas.
-- Subtarefas: organização avançada com tarefas principais e subtarefas.
-- Priorização e status: controle personalizado para cada tarefa.
-- Documentação interativa: Swagger UI para explorar e testar endpoints.
-- Containerização: banco MySQL configurado com Docker Compose.
+### Gerenciamento de Tarefas
+
+* Criação de tarefa com título, descrição, data de vencimento, status e prioridade.
+* Listagem de tarefas com filtros por status, prioridade e data de vencimento.
+* CRUD completo: criação, leitura, atualização e exclusão de tarefas.
+* Impedimento de conclusão de tarefa caso existam subtarefas pendentes.
+
+### Segurança e Usuário
+
+* Autenticação JWT com rotas protegidas.
+* Associações de tarefas por usuário autenticado.
+
+### Qualidade e Validação
+
+* Validação de dados com `@Valid` e mensagens de erro claras.
+* Testes unitários e de integração cobrindo funcionalidades críticas.
+
+### Infraestrutura e Documentação
+
+* Documentação completa via Swagger.
+* Docker Compose configurado com banco de dados para ambiente de desenvolvimento e testes.
 
 ---
 
