@@ -11,7 +11,8 @@ spring:
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
 server:
-  port: 8080
+  port: ${PORT:8080}   # Railway dynamic port
+  address: 0.0.0.0     # allow external access
 
 api:
   security:
