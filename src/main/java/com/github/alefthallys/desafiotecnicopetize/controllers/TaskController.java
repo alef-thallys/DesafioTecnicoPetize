@@ -60,14 +60,6 @@ public class TaskController {
 		return ResponseEntity.status(HttpStatus.CREATED).body(resource);
 	}
 	
-	@PostMapping(consumes = "application/json", value = "/{id}/subtasks")
-	@Operation(summary = "Create subtasks", description = "Creates subtasks for a given task ID and returns the updated task.")
-	public ResponseEntity<EntityModel<TaskResponseDTO>> createSubtasks(@PathVariable UUID id, @RequestBody @Valid SubTaskRequestDTO subTaskRequestDTO) {
-		TaskResponseDTO updatedTask = taskService.createSubtasks(id, subTaskRequestDTO);
-		EntityModel<TaskResponseDTO> resource = taskResponseAssembler.toModel(updatedTask);
-		return ResponseEntity.status(HttpStatus.CREATED).body(resource);
-	}
-	
 	@PutMapping(value = "/{id}", consumes = "application/json")
 	@Operation(summary = "Update a task", description = "Updates an existing task by its ID.")
 	public ResponseEntity<EntityModel<TaskResponseDTO>> update(@PathVariable UUID id, @RequestBody @Valid TaskRequestDTO taskRequestDTO) {

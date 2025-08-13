@@ -60,20 +60,6 @@ public class TaskService {
 		return TaskMapperUtils.toResponseDTO(taskRepository.save(taskModel));
 	}
 	
-	public TaskResponseDTO createSubtasks(UUID id, @Valid SubTaskRequestDTO subTaskRequestDTO) {
-		UserModel currentUserModel = getCurrentUser();
-		TaskModel taskModel = taskRepository.findById(id)
-				.orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + id));
-		if (!taskModel.getUserModel().getId().equals(currentUserModel.getId())) {
-			throw new AccessDeniedTaskException("You do not have permission to add subtasks to this task.");
-		}
-		SubTaskModel subTaskModel = TaskMapperUtils.toSubTaskEntity(subTaskRequestDTO);
-		subTaskModel.setTaskModel(taskModel);
-		taskModel.getSubTaskModels().add(subTaskModel);
-		TaskModel updatedTaskModel = taskRepository.save(taskModel);
-		return TaskMapperUtils.toResponseDTO(updatedTaskModel);
-	}
-	
 	public TaskResponseDTO update(UUID id, TaskRequestDTO taskRequestDTO) {
 		UserModel currentUserModel = getCurrentUser();
 		TaskModel existingTaskModel = taskRepository.findById(id)

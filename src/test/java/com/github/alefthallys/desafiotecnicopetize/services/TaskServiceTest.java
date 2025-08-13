@@ -196,45 +196,6 @@ class TaskServiceTest {
 	}
 	
 	@Nested
-	@DisplayName("Tests for createSubtasks")
-	class CreateSubtasksTests {
-		@Test
-		@DisplayName("Should add subtasks and return updated TaskResponseDTO")
-		void testCreateSubtasksSuccess() {
-			when(taskRepository.findById(taskId)).thenReturn(Optional.of(taskModel));
-			// Return the same task instance that will have the new subtask added
-			when(taskRepository.save(any(TaskModel.class))).thenAnswer(invocation -> invocation.getArgument(0));
-			
-			SubTaskRequestDTO newSub = new SubTaskRequestDTO("New Sub", Status.TODO);
-			TaskResponseDTO result = taskService.createSubtasks(taskId, newSub);
-			
-			assertNotNull(result);
-			assertEquals(2, result.subTasks().size());
-			assertTrue(result.subTasks().stream().anyMatch(s -> s.title().equals("New Sub")));
-			verify(taskRepository).findById(taskId);
-			verify(taskRepository).save(any(TaskModel.class));
-		}
-		
-		@Test
-		@DisplayName("Should throw ResourceNotFoundException when task ID does not exist")
-		void testCreateSubtasksNotFound() {
-			when(taskRepository.findById(nonExistingTaskId)).thenReturn(Optional.empty());
-			assertThrows(ResourceNotFoundException.class, () -> taskService.createSubtasks(nonExistingTaskId, new SubTaskRequestDTO("x", Status.TODO)));
-		}
-		
-		@Test
-		@DisplayName("Should throw AccessDeniedTaskException when adding subtasks to another user's task")
-		void testCreateSubtasksAccessDenied() {
-			UserModel otherUser = new UserModel();
-			otherUser.setId(UUID.randomUUID());
-			taskModel.setUserModel(otherUser);
-			when(taskRepository.findById(taskId)).thenReturn(Optional.of(taskModel));
-			assertThrows(AccessDeniedTaskException.class, () -> taskService.createSubtasks(taskId, new SubTaskRequestDTO("x", Status.TODO)));
-			verify(taskRepository, never()).save(any());
-		}
-	}
-	
-	@Nested
 	@DisplayName("Tests for update")
 	class UpdateTaskModelTests {
 		@Test

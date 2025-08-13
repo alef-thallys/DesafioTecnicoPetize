@@ -130,7 +130,6 @@ Permite testar todos os endpoints diretamente no navegador.
 - `POST /` — Cria nova tarefa.
 - `PUT /{id}` — Atualiza tarefa.
 - `DELETE /{id}` — Remove tarefa.
-- `POST /{id}/subtasks` — Adiciona subtarefa.
 
 ---
 
