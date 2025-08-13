@@ -8,7 +8,9 @@ import com.github.alefthallys.desafiotecnicopetize.enums.Status;
 import com.github.alefthallys.desafiotecnicopetize.exceptions.ResourceNotFoundException;
 import com.github.alefthallys.desafiotecnicopetize.models.SubTask;
 import com.github.alefthallys.desafiotecnicopetize.models.Task;
+import com.github.alefthallys.desafiotecnicopetize.models.User;
 import com.github.alefthallys.desafiotecnicopetize.repositories.TaskRepository;
+import com.github.alefthallys.desafiotecnicopetize.repositories.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -17,8 +19,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +41,13 @@ class TaskServiceTest {
 	@Mock
 	private TaskRepository taskRepository;
 	
+	@Mock
+	private UserRepository userRepository;
+	
 	@InjectMocks
 	private TaskService taskService;
 	
+	private User user;
 	private Task task;
 	private TaskRequestDTO taskRequestDTO;
 	private UUID taskId;
@@ -47,6 +57,17 @@ class TaskServiceTest {
 	void setUp() {
 		taskId = UUID.randomUUID();
 		nonExistingTaskId = UUID.randomUUID();
+		
+		user = new User();
+		user.setId(UUID.randomUUID());
+		user.setUsername("testuser");
+		
+		Authentication authentication = mock(Authentication.class);
+		SecurityContext securityContext = mock(SecurityContext.class);
+		when(securityContext.getAuthentication()).thenReturn(authentication);
+		SecurityContextHolder.setContext(securityContext);
+		when(SecurityContextHolder.getContext().getAuthentication().getName()).thenReturn("testuser");
+		when(userRepository.findByUsername("testuser")).thenReturn(user);
 		
 		SubTask subTask = new SubTask();
 		subTask.setId(UUID.randomUUID());
@@ -60,7 +81,8 @@ class TaskServiceTest {
 		task.setDueDate(LocalDate.parse("2025-10-01"));
 		task.setStatus(Status.TODO);
 		task.setPriority(Priority.HIGH);
-		task.setSubTasks(Collections.singletonList(subTask));
+		task.setSubTasks(new ArrayList<>(Collections.singletonList(subTask)));
+		task.setUser(user);
 		
 		SubTaskRequestDTO subTaskRequestDTO = new SubTaskRequestDTO("SubTask Title", Status.TODO);
 		taskRequestDTO = new TaskRequestDTO("title", "description", LocalDate.parse("2025-10-01"), Status.TODO, Priority.HIGH, Collections.singletonList(subTaskRequestDTO));
@@ -88,26 +110,26 @@ class TaskServiceTest {
 		@Test
 		@DisplayName("Should return list of TaskResponseDTO when tasks exist")
 		void testFindAllShouldReturnListOfTasks() {
-			when(taskRepository.findAll()).thenReturn(List.of(task));
+			when(taskRepository.findByUserId(user.getId())).thenReturn(List.of(task));
 			
 			List<TaskResponseDTO> result = taskService.findAll();
 			
 			assertNotNull(result);
 			assertEquals(1, result.size());
 			assertTaskResponseEqualsTask(result.get(0), task);
-			verify(taskRepository).findAll();
+			verify(taskRepository).findByUserId(user.getId());
 		}
 		
 		@Test
 		@DisplayName("Should return empty list when no tasks exist")
 		void testFindAllShouldReturnEmptyList() {
-			when(taskRepository.findAll()).thenReturn(Collections.emptyList());
+			when(taskRepository.findByUserId(user.getId())).thenReturn(Collections.emptyList());
 			
 			List<TaskResponseDTO> result = taskService.findAll();
 			
 			assertNotNull(result);
 			assertTrue(result.isEmpty());
-			verify(taskRepository).findAll();
+			verify(taskRepository).findByUserId(user.getId());
 		}
 	}
 	
@@ -178,7 +200,8 @@ class TaskServiceTest {
 			updatedTask.setDueDate(LocalDate.parse("2025-10-02"));
 			updatedTask.setStatus(Status.DONE);
 			updatedTask.setPriority(Priority.LOW);
-			updatedTask.setSubTasks(Collections.singletonList(updatedSubTask));
+			updatedTask.setSubTasks(new ArrayList<>(Collections.singletonList(updatedSubTask)));
+			updatedTask.setUser(user);
 			
 			when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
 			when(taskRepository.save(any(Task.class))).thenReturn(updatedTask);
@@ -212,7 +235,7 @@ class TaskServiceTest {
 			doneSubTask.setId(UUID.randomUUID());
 			doneSubTask.setTitle("SubTask DONE");
 			doneSubTask.setStatus(Status.DONE);
-			task.setSubTasks(List.of(doneSubTask));
+			task.setSubTasks(new ArrayList<>(List.of(doneSubTask)));
 			
 			when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
 			doNothing().when(taskRepository).deleteById(taskId);
@@ -240,7 +263,7 @@ class TaskServiceTest {
 			todoSubTask.setId(UUID.randomUUID());
 			todoSubTask.setTitle("SubTask TODO");
 			todoSubTask.setStatus(Status.TODO);
-			task.setSubTasks(List.of(todoSubTask));
+			task.setSubTasks(new ArrayList<>(List.of(todoSubTask)));
 			
 			when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
 			
