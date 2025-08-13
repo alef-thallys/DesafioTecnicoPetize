@@ -122,6 +122,7 @@
                     <user>${DB_USERNAME}</user>
                     <!--suppress UnresolvedMavenProperty -->
                     <password>${DB_PASSWORD}</password>
+                    <driver>com.mysql.cj.jdbc.Driver</driver>
                     <locations>
                         <location>filesystem:src/main/resources/database</location>
                     </locations>
