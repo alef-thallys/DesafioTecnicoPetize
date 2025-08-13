@@ -20,7 +20,7 @@ Inclui autenticação JWT, documentação interativa via Swagger e ambiente pron
 - [Pré-requisitos](#pré-requisitos)
 - [Como Executar](#como-executar)
 - [Documentação da API (Swagger)](#documentação-da-api-swagger)
-- [Endpoints da API](#endpoints-da-api)
+- [Endpoints da API](#endpoints-principais)
 - [Estrutura do Projeto](#estrutura-do-projeto)
 - [Aprendizados](#aprendizados)
 
