@@ -39,10 +39,14 @@ public class AuthController {
 	@PostMapping("/login")
 	@Operation(summary = "User login", description = "Authenticates a user and returns a JWT token.")
 	public ResponseEntity<LoginResponseDTO> login(@RequestBody @Valid LoginRequestDTO loginRequestDTO) {
-		UsernamePasswordAuthenticationToken usernamePassword = new UsernamePasswordAuthenticationToken(loginRequestDTO.username(), loginRequestDTO.password());
-		Authentication auth = this.authenticationManager.authenticate(usernamePassword);
-		String token = tokenService.generateToken((User) auth.getPrincipal());
-		return ResponseEntity.ok(new LoginResponseDTO(token));
+		try {
+			UsernamePasswordAuthenticationToken usernamePassword = new UsernamePasswordAuthenticationToken(loginRequestDTO.username(), loginRequestDTO.password());
+			Authentication auth = this.authenticationManager.authenticate(usernamePassword);
+			String token = tokenService.generateToken((User) auth.getPrincipal());
+			return ResponseEntity.ok(new LoginResponseDTO(token));
+		} catch (RuntimeException e) {
+			return ResponseEntity.status(403).build();
+		}
 	}
 	
 	@PostMapping("/register")
@@ -55,7 +59,6 @@ public class AuthController {
 		String encryptedPassword = new BCryptPasswordEncoder().encode(registerDTO.password());
 		User newUser = new User(registerDTO.username(), encryptedPassword, Role.USER);
 		this.repository.save(newUser);
-		return ResponseEntity.ok().build();
+		return ResponseEntity.noContent().build();
 	}
 }
-

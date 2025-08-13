@@ -92,7 +92,6 @@ public class TaskControllerTest {
 		return new TaskResponseDTO(id, title, desc, date, status, priority, now, now, subTasks);
 	}
 	
-	// Helper for JSON content type
 	private String toJson(Object obj) throws Exception {
 		return objectMapper.writeValueAsString(obj);
 	}
