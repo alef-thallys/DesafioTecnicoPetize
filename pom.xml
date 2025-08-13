@@ -85,6 +85,15 @@
         </dependency>
 
         <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-hateoas</artifactId>
         </dependency>
@@ -114,7 +123,6 @@
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
-                <version>10.13.0</version>
                 <configuration>
                     <!--suppress UnresolvedMavenProperty -->
                     <url>jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}</url>
@@ -122,10 +130,6 @@
                     <user>${DB_USERNAME}</user>
                     <!--suppress UnresolvedMavenProperty -->
                     <password>${DB_PASSWORD}</password>
-                    <driver>com.mysql.cj.jdbc.Driver</driver>
-                    <locations>
-                        <location>filesystem:src/main/resources/database</location>
-                    </locations>
                 </configuration>
             </plugin>
             <plugin>
