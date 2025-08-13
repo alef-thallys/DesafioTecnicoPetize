@@ -5,6 +5,7 @@ import com.github.alefthallys.desafiotecnicopetize.dtos.TaskRequestDTO;
 import com.github.alefthallys.desafiotecnicopetize.dtos.TaskResponseDTO;
 import com.github.alefthallys.desafiotecnicopetize.enums.Priority;
 import com.github.alefthallys.desafiotecnicopetize.enums.Status;
+import com.github.alefthallys.desafiotecnicopetize.exceptions.AccessDeniedTaskException;
 import com.github.alefthallys.desafiotecnicopetize.exceptions.ResourceNotFoundException;
 import com.github.alefthallys.desafiotecnicopetize.models.SubTaskModel;
 import com.github.alefthallys.desafiotecnicopetize.models.TaskModel;
@@ -127,6 +128,14 @@ class TaskModelServiceTest {
 			assertTrue(result.isEmpty());
 			verify(taskRepository).findByUserModelId(userModel.getId());
 		}
+		
+		@Test
+		@DisplayName("Should throw ResourceNotFoundException when current user not found")
+		void testFindAllShouldThrowWhenUserNotFound() {
+			when(userRepository.findByUsername("testuser")).thenReturn(null);
+			assertThrows(ResourceNotFoundException.class, () -> taskService.findAll());
+			verify(taskRepository, never()).findByUserModelId(any());
+		}
 	}
 	
 	@Nested
@@ -152,6 +161,16 @@ class TaskModelServiceTest {
 			assertThrows(ResourceNotFoundException.class, () -> taskService.findById(nonExistingTaskId));
 			verify(taskRepository).findById(nonExistingTaskId);
 		}
+		
+		@Test
+		@DisplayName("Should throw AccessDeniedTaskException when task belongs to another user")
+		void testFindByIdShouldThrowAccessDenied() {
+			UserModel otherUser = new UserModel();
+			otherUser.setId(UUID.randomUUID());
+			taskModel.setUserModel(otherUser);
+			when(taskRepository.findById(taskId)).thenReturn(Optional.of(taskModel));
+			assertThrows(AccessDeniedTaskException.class, () -> taskService.findById(taskId));
+		}
 	}
 	
 	@Nested
@@ -173,6 +192,45 @@ class TaskModelServiceTest {
 		@DisplayName("Should throw NullPointerException when TaskRequestDTO is null")
 		void testCreateShouldThrowExceptionOnNull() {
 			assertThrows(NullPointerException.class, () -> taskService.create(null));
+		}
+	}
+	
+	@Nested
+	@DisplayName("Tests for createSubtasks")
+	class CreateSubtasksTests {
+		@Test
+		@DisplayName("Should add subtasks and return updated TaskResponseDTO")
+		void testCreateSubtasksSuccess() {
+			when(taskRepository.findById(taskId)).thenReturn(Optional.of(taskModel));
+			// Return the same task instance that will have the new subtask added
+			when(taskRepository.save(any(TaskModel.class))).thenAnswer(invocation -> invocation.getArgument(0));
+			
+			SubTaskRequestDTO newSub = new SubTaskRequestDTO("New Sub", Status.TODO);
+			TaskResponseDTO result = taskService.createSubtasks(taskId, newSub);
+			
+			assertNotNull(result);
+			assertEquals(2, result.subTasks().size());
+			assertTrue(result.subTasks().stream().anyMatch(s -> s.title().equals("New Sub")));
+			verify(taskRepository).findById(taskId);
+			verify(taskRepository).save(any(TaskModel.class));
+		}
+		
+		@Test
+		@DisplayName("Should throw ResourceNotFoundException when task ID does not exist")
+		void testCreateSubtasksNotFound() {
+			when(taskRepository.findById(nonExistingTaskId)).thenReturn(Optional.empty());
+			assertThrows(ResourceNotFoundException.class, () -> taskService.createSubtasks(nonExistingTaskId, new SubTaskRequestDTO("x", Status.TODO)));
+		}
+		
+		@Test
+		@DisplayName("Should throw AccessDeniedTaskException when adding subtasks to another user's task")
+		void testCreateSubtasksAccessDenied() {
+			UserModel otherUser = new UserModel();
+			otherUser.setId(UUID.randomUUID());
+			taskModel.setUserModel(otherUser);
+			when(taskRepository.findById(taskId)).thenReturn(Optional.of(taskModel));
+			assertThrows(AccessDeniedTaskException.class, () -> taskService.createSubtasks(taskId, new SubTaskRequestDTO("x", Status.TODO)));
+			verify(taskRepository, never()).save(any());
 		}
 	}
 	
@@ -218,6 +276,17 @@ class TaskModelServiceTest {
 			assertThrows(ResourceNotFoundException.class, () -> taskService.update(nonExistingTaskId, taskRequestDTO));
 			verify(taskRepository).findById(nonExistingTaskId);
 			verify(taskRepository, never()).save(any(TaskModel.class));
+		}
+		
+		@Test
+		@DisplayName("Should throw AccessDeniedTaskException when updating another user's task")
+		void testUpdateShouldThrowAccessDenied() {
+			UserModel otherUser = new UserModel();
+			otherUser.setId(UUID.randomUUID());
+			taskModel.setUserModel(otherUser);
+			when(taskRepository.findById(taskId)).thenReturn(Optional.of(taskModel));
+			assertThrows(AccessDeniedTaskException.class, () -> taskService.update(taskId, taskRequestDTO));
+			verify(taskRepository, never()).save(any());
 		}
 	}
 	
@@ -265,6 +334,17 @@ class TaskModelServiceTest {
 			
 			assertThrows(IllegalStateException.class, () -> taskService.delete(taskId));
 			verify(taskRepository, never()).deleteById(any(UUID.class));
+		}
+		
+		@Test
+		@DisplayName("Should throw AccessDeniedTaskException when deleting another user's task")
+		void testDeleteShouldThrowAccessDenied() {
+			UserModel otherUser = new UserModel();
+			otherUser.setId(UUID.randomUUID());
+			taskModel.setUserModel(otherUser);
+			when(taskRepository.findById(taskId)).thenReturn(Optional.of(taskModel));
+			assertThrows(AccessDeniedTaskException.class, () -> taskService.delete(taskId));
+			verify(taskRepository, never()).deleteById(any());
 		}
 	}
 }
